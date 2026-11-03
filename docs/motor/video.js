@@ -166,9 +166,9 @@ window.crearVideo = function (stage, V) {
         var sv = el("div", "marco", '<svg width="' + svgW + '" height="' + svgH + '"><rect x="4" y="4" rx="12" width="' + (svgW - 8) + '" height="' + (svgH - 8) + '"/></svg>', cam);
         sv.style.left = (c.x - pad) + "px"; sv.style.top = (c.y - pad) + "px";
         var ins = el("div", "insignia", String(i + 1), cam);
-        ins.style.left = (c.x + c.w - 6) + "px"; ins.style.top = (c.y - 44) + "px";
+        ins.style.left = (c.x + c.w + 14) + "px"; ins.style.top = (c.y + c.h / 2 - 29) + "px";
         var gl = el("div", "globo", d.notas[i] || "", cam);
-        var gx = c.x + c.w + 46, gy = c.y - 10, derecha = true;
+        var gx = c.x + c.w + 90, gy = c.y - 10, derecha = true;
         if (gx + 520 > 1880) { gx = Math.max(60, c.x + c.w - 520); gy = c.y + c.h + 30; derecha = false; }
         gl.style.left = gx + "px"; gl.style.top = gy + "px";
         var esBoton = !!marcas[i].querySelector(".correo-btn");
