@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Generador de formación</title>
+<meta name="description" content="Escribe un guion y obtén un vídeo animado o una lección SCORM. Todo funciona en tu navegador.">
+<link rel="stylesheet" href="motor/video.css">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<header class="ed-cab">
+  <div class="ed-logo"><span></span>Generador de formación</div>
+  <div class="ed-cab-acciones">
+    <label class="ed-campo-cab">Ejemplo
+      <select id="sel-ejemplo">
+        <option value="">Elegir…</option>
+        <option value="ejemplos/curso_en.md">Phishing (inglés)</option>
+        <option value="ejemplos/curso_es.md">Phishing (español)</option>
+        <option value="nuevo">Guion en blanco</option>
+      </select>
+    </label>
+    <button class="ed-btn" id="btn-ayuda" aria-expanded="false">Cómo se escribe</button>
+    <div class="ed-menu">
+      <button class="ed-btn ed-btn-pri" id="btn-exportar" aria-expanded="false" aria-haspopup="true">Exportar ▾</button>
+      <div class="ed-menu-lista" id="menu-exportar" hidden>
+        <button data-exp="video"><strong>Vídeo animado (HTML)</strong><span>Un archivo que se reproduce en cualquier navegador.</span></button>
+        <button data-exp="scorm"><strong>Lección SCORM (.zip)</strong><span>Para el LMS, con preguntas puntuables.</span></button>
+        <button data-exp="guion"><strong>Guion (.md)</strong><span>Para guardarlo o generar la versión con voz en local.</span></button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="ed-aviso" id="aviso" hidden></div>
+
+<main class="ed-main">
+  <section class="ed-panel ed-izq" aria-label="Guion">
+    <div class="ed-barra">
+      <span class="ed-etq">Añadir escena:</span>
+      <button class="ed-chip" data-plantilla="portada">Portada</button>
+      <button class="ed-chip" data-plantilla="contenido">Lista</button>
+      <button class="ed-chip" data-plantilla="cifra">Cifra</button>
+      <button class="ed-chip" data-plantilla="correo">Correo</button>
+      <button class="ed-chip" data-plantilla="pregunta">Pregunta</button>
+      <button class="ed-chip" data-plantilla="cierre">Cierre</button>
+    </div>
+    <textarea id="guion" spellcheck="false" aria-label="Texto del guion"></textarea>
+    <div class="ed-estado" id="estado" role="status"></div>
+  </section>
+
+  <section class="ed-panel ed-der" aria-label="Vista previa">
+    <div class="ed-pantalla" id="pantalla"><div id="lienzo"></div></div>
+    <div class="ed-controles">
+      <button class="ed-play" id="btn-play" aria-label="Reproducir">▶</button>
+      <input type="range" id="barra-tiempo" min="0" max="1000" value="0" aria-label="Posición">
+      <span class="ed-tiempo" id="tiempo">0:00 / 0:00</span>
+    </div>
+    <div class="ed-escenas" id="escenas"></div>
+    <div class="ed-ajustes">
+      <label>Velocidad de lectura
+        <input type="number" id="ppm" min="100" max="220" step="5" value="150"> palabras/min
+      </label>
+      <label class="ed-check"><input type="checkbox" id="chk-subs" checked> Texto de la narración en pantalla</label>
+    </div>
+    <p class="ed-nota">Sin voz: cada frase dura lo que se tarda en leerla. Para la versión con voz, exporta el guion y genera el vídeo en local con <code>generador/video.py</code>.</p>
+  </section>
+</main>
+
+<aside class="ed-ayuda" id="ayuda" hidden>
+  <div class="ed-ayuda-cab"><h2>Cómo se escribe el guion</h2><button class="ed-btn" id="btn-cerrar-ayuda">Cerrar</button></div>
+  <table>
+    <tr><td><code>## Título</code></td><td>Empieza una escena nueva.</td></tr>
+    <tr><td><code>tipo: …</code></td><td><code>portada</code>, <code>contenido</code> (lista), <code>cifra</code>, <code>correo</code>, <code>pregunta</code> o <code>cierre</code>.</td></tr>
+    <tr><td><code>&gt; texto</code></td><td>Narración. En el vídeo sin voz aparece como texto en pantalla.</td></tr>
+    <tr><td><code>{1} {2} …</code></td><td>Dentro de la narración: en ese momento aparece el elemento 1, 2… (y en el correo, la cámara hace zoom).</td></tr>
+    <tr><td><code>- texto</code></td><td>Elemento de una lista. <code>**negrita**</code> para destacar.</td></tr>
+    <tr><td><code>cifra: 7 de cada 10</code></td><td>En escenas <code>cifra</code>: el primer número cuenta hacia arriba y se dibuja un pictograma.</td></tr>
+    <tr><td><code>```correo … ```</code></td><td>Un correo de ejemplo. Primera parte: <code>De:</code>, <code>Para:</code>, <code>Asunto:</code>; tras una línea en blanco, el cuerpo.</td></tr>
+    <tr><td><code>[[texto|nota]]</code></td><td>Dentro del correo: resalta «texto» y muestra la nota. <code>[[btn:Texto|nota]]</code> dibuja un botón.</td></tr>
+    <tr><td><code>pregunta: …</code></td><td>Opciones con <code>- [ ]</code> y la correcta con <code>- [x]</code>. Además <code>explicacion:</code> y, opcional, <code>repasar: Título de otra escena</code>.</td></tr>
+    <tr><td><code>[hackeó](jaqueó)</code></td><td>En pantalla se ve lo primero; la voz (versión local) dice lo segundo.</td></tr>
+  </table>
+  <p>La cabecera entre <code>---</code> define <code>titulo</code>, <code>subtitulo</code>, <code>empresa</code>, <code>idioma</code> (es / en), <code>color</code> y <code>nota_aprobado</code>.</p>
+  <p>Tu guion se guarda automáticamente <strong>solo en este navegador</strong>; no se envía a ningún servidor.</p>
+</aside>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="motor/video.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

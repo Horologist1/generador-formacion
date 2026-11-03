@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="{{IDIOMA}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{TITULO}}</title>
+<link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+<div class="app">
+  <header class="barra-sup">
+    <div class="marca" id="marca"></div>
+    <div class="titulo-curso" id="titulo-curso"></div>
+    <div class="progreso-txt" id="progreso-txt"></div>
+  </header>
+
+  <main class="zona">
+    <section class="escenario" id="escenario" aria-live="polite"></section>
+    <div class="subtitulo" id="subtitulo"><span></span></div>
+  </main>
+
+  <nav class="controles" aria-label="Controles de la lección">
+    <div class="grupo">
+      <button class="btn-icono" id="btn-ant" aria-label="Diapositiva anterior" title="Anterior (←)">
+        <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <button class="btn-icono btn-play" id="btn-play" aria-label="Reproducir" title="Reproducir / pausa (espacio)">
+        <svg class="i-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" class="relleno"/></svg>
+        <svg class="i-pausa" viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></svg></button>
+      <button class="btn-icono" id="btn-sig" aria-label="Diapositiva siguiente" title="Siguiente (→)">
+        <svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+    </div>
+    <div class="segmentos" id="segmentos" role="list"></div>
+    <div class="grupo">
+      <button class="btn-txt activo" id="btn-cc" aria-pressed="true" title="Subtítulos">CC</button>
+      <label class="velocidad" title="Velocidad de la voz">
+        <span class="sr">Velocidad</span>
+        <select id="sel-vel">
+          <option value="0.85">0,85×</option>
+          <option value="1" selected>1×</option>
+          <option value="1.15">1,15×</option>
+          <option value="1.3">1,3×</option>
+        </select>
+      </label>
+      <button class="btn-txt" id="btn-trans" aria-pressed="false" title="Ver el texto completo">Texto</button>
+    </div>
+  </nav>
+
+  <aside class="transcripcion" id="transcripcion" hidden>
+    <div class="trans-cab">
+      <h2>Texto de la lección</h2>
+      <button class="btn-icono" id="btn-cerrar-trans" aria-label="Cerrar">
+        <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <div id="trans-cuerpo"></div>
+  </aside>
+
+  <div class="inicio" id="inicio">
+    <div class="inicio-caja">
+      <div class="eyebrow" id="ini-empresa"></div>
+      <h1 id="ini-titulo"></h1>
+      <p class="ini-sub" id="ini-sub"></p>
+      <p class="ini-dur" id="ini-dur"></p>
+      <div class="ini-botones">
+        <button class="btn-primario" id="btn-empezar">Empezar</button>
+        <button class="btn-secundario" id="btn-continuar" hidden></button>
+      </div>
+      <p class="ini-ayuda">Con sonido. Puedes activar los subtítulos o leer el texto completo en cualquier momento.</p>
+    </div>
+  </div>
+</div>
+
+<audio id="audio" preload="auto"></audio>
+<script src="curso.js"></script>
+<script src="scorm.js"></script>
+<script src="reproductor.js"></script>
+</body>
+</html>

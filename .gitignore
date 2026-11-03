@@ -1,0 +1,33 @@
+# Claves y configuración local: NUNCA al repositorio
+.env
+*.key
+*.pem
+
+# Resultados generados
+salida/
+muestras_voz/
+
+# Modelos, voces, cachés y entornos (pesados y regenerables)
+voces/
+.cache/
+.modelos/
+.venv*/
+__pycache__/
+*.pyc
+*.onnx
+*.wav
+*.mp3
+*.mp4
+
+# Herramientas de prueba
+.playwright-mcp/
+generador/voces_*_muestras.py
+
+# Sistema
+Thumbs.db
+.DS_Store
+desktop.ini
+
+# Archivos de bloqueo de LibreOffice/Office (contienen usuario y equipo)
+.~lock.*
+~$*
