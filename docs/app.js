@@ -14,7 +14,7 @@
   var TXT = {
     en: {
       app: "Training Video Builder", ejemplo: "Example", elegir: "Choose…", ej_en: "Phishing (English)", ej_es: "Phishing (Spanish)",
-      ej_nuevo: "Blank script", como: "How to write", exportar: "Export",
+      ej_datos: "Customer data (English)", ej_nuevo: "Blank script", como: "How to write", exportar: "Export",
       exp_video: "Animated video (HTML)", exp_video_d: "A single file that plays in any browser.",
       exp_scorm: "SCORM lesson (.zip)", exp_scorm_d: "For your LMS, with scored questions.",
       exp_guion: "Script (.md)", exp_guion_d: "To keep it, or to render the voiced version locally.",
@@ -33,7 +33,7 @@
     },
     es: {
       app: "Generador de formación", ejemplo: "Ejemplo", elegir: "Elegir…", ej_en: "Phishing (inglés)", ej_es: "Phishing (español)",
-      ej_nuevo: "Guion en blanco", como: "Cómo se escribe", exportar: "Exportar",
+      ej_datos: "Datos de clientes (inglés)", ej_nuevo: "Guion en blanco", como: "Cómo se escribe", exportar: "Exportar",
       exp_video: "Vídeo animado (HTML)", exp_video_d: "Un archivo que se reproduce en cualquier navegador.",
       exp_scorm: "Lección SCORM (.zip)", exp_scorm_d: "Para el LMS, con preguntas puntuables.",
       exp_guion: "Guion (.md)", exp_guion_d: "Para guardarlo o generar la versión con voz en local.",
@@ -63,6 +63,7 @@
     document.title = T("app");
     document.querySelectorAll("[data-t]").forEach(function (e) { e.textContent = T(e.dataset.t); });
     document.querySelectorAll("[data-t-html]").forEach(function (e) { e.innerHTML = T(e.dataset.tHtml); });
+    document.querySelectorAll("[data-t-ph]").forEach(function (e) { e.placeholder = T(e.dataset.tPh); });
     document.querySelectorAll("[data-t-aria]").forEach(function (e) { e.setAttribute("aria-label", T(e.dataset.tAria)); });
     document.querySelectorAll("[data-solo]").forEach(function (e) { e.hidden = e.dataset.solo !== idiomaUI; });
     document.querySelectorAll("[data-idioma]").forEach(function (b) { b.setAttribute("aria-pressed", b.dataset.idioma === idiomaUI); });
@@ -650,6 +651,29 @@
       return zip.generateAsync({ type: "blob" });
     }).then(function (blob) { descargar(blob, nombre + "-scorm.zip"); });
   }
+
+  // --------------------------------------------------------------- puente para otros módulos (ia.js)
+  window.EDITOR = {
+    idioma: function () { return idiomaUI; },
+    T: T,
+    textos: function (extra) {
+      Object.keys(extra).forEach(function (l) { Object.assign(TXT[l], extra[l]); });
+      aplicarIdioma();
+    },
+    texto: function () { return editor.value; },
+    revisar: function (txt) { var g = leerGuion(txt); return validar(g.meta, g.diapositivas); },
+    cargar: function (txt) {
+      previo = editor.value;
+      editor.value = txt;
+      guardarBorrador();
+      t = 0;
+      reconstruir(false);
+      aviso(esc(T("cargado")) + ' <button id="btn-recuperar">' + esc(T("recuperar")) + "</button>");
+    },
+    aviso: aviso,
+    esc: esc
+  };
+  document.dispatchEvent(new Event("editor-listo"));
 
   // --------------------------------------------------------------- arranque
   var guardado = null;

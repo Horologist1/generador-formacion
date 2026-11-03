@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prepare AI access</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%228%22 fill=%22%230f5f73%22/%3E%3Cpath d=%22M12 9l11 7-11 7z%22 fill=%22white%22/%3E%3C/svg%3E">
+<link rel="stylesheet" href="app.css">
+<style>
+  body { display: block; }
+  .ac { max-width: 720px; margin: 0 auto; padding: 24px 16px 48px; }
+  .ac-tarjeta { background: var(--ed-papel); border: 1px solid var(--ed-linea); border-radius: 16px; padding: 22px 24px; display: flex; flex-direction: column; gap: 16px; }
+  .ac h1 { margin: 0; font-size: 26px; }
+  .ac p, .ac li { margin: 0; }
+  .ac ol { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 6px; }
+  .ac .ia-campo input { height: 44px; }
+  .ac textarea { font-family: Consolas, "SFMono-Regular", Menlo, monospace; font-size: 15px; min-height: 140px; word-break: break-all; }
+  .ac-volver { display: inline-block; margin-bottom: 14px; font-size: 16px; color: var(--ed-marca); }
+  .ac-aviso { background: #fff7e6; border: 1px solid #f3d38a; border-radius: 10px; padding: 12px 14px; font-size: 15px; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main class="ac">
+  <a class="ac-volver" href="./" data-t="volver"></a>
+  <div class="ac-tarjeta">
+    <h1 data-t="tit"></h1>
+    <p data-t="intro"></p>
+    <ol>
+      <li data-t="p1"></li>
+      <li data-t="p2"></li>
+      <li data-t="p3"></li>
+    </ol>
+    <div class="ac-aviso" data-t-html="aviso"></div>
+    <form id="form" novalidate style="display:flex;flex-direction:column;gap:14px">
+      <label class="ia-campo"><span data-t="clave"></span>
+        <input type="password" id="clave" autocomplete="off" placeholder="sk-…">
+      </label>
+      <label class="ia-campo"><span data-t="pass"></span>
+        <input type="password" id="pass" autocomplete="new-password">
+      </label>
+      <label class="ia-campo"><span data-t="pass2"></span>
+        <input type="password" id="pass2" autocomplete="new-password">
+      </label>
+      <div class="ia-estado" id="estado" role="status" aria-live="polite"></div>
+      <div class="ia-botones"><button type="submit" class="ed-btn ed-btn-pri" id="crear" data-t="crear"></button></div>
+    </form>
+    <div id="resultado" hidden style="display:flex;flex-direction:column;gap:12px">
+      <label class="ia-campo"><span data-t="bloque"></span>
+        <textarea id="salida" readonly></textarea>
+      </label>
+      <div class="ia-botones">
+        <button type="button" class="ed-btn ed-btn-pri" id="copiar" data-t="copiar"></button>
+        <button type="button" class="ed-btn" id="bajar" data-t="bajar"></button>
+      </div>
+      <p class="ia-nota" data-t="despues"></p>
+    </div>
+  </div>
+</main>
+<script>
+(function () {
+  "use strict";
+  var TXT = {
+    en: {
+      volver: "← Back to the editor", tit: "Prepare AI access for your team",
+      intro: "Your colleagues will be able to use “Generate with AI” with a password, without ever seeing your DeepSeek key.",
+      p1: "Enter your DeepSeek API key and choose a password. The key is encrypted here, in your browser: it is never sent anywhere except to DeepSeek, once, to check that it works.",
+      p2: "You get an encrypted block. Publish it as docs/acceso.json in the repository (or send it to whoever maintains the site). Without the password it can't be read.",
+      p3: "Give the password to your colleagues privately.",
+      aviso: "<strong>Use a long password</strong>, like a phrase of 4–5 words: the encrypted block is public. Create a <strong>separate key</strong> just for this, keep a <strong>small balance</strong>, and if the password leaks, revoke the key in DeepSeek and repeat these steps.",
+      clave: "DeepSeek API key", pass: "Team password (at least 16 characters)", pass2: "Repeat the password",
+      crear: "Check the key and encrypt it", bloque: "Encrypted block (acceso.json)", copiar: "Copy", copiado: "Copied.", bajar: "Download acceso.json",
+      despues: "This block contains no readable key. You can share it safely; keep the password private.",
+      faltaClave: "Enter the key.", corta: "The password needs at least 16 characters. A phrase of a few words works well.",
+      distintas: "The passwords don't match.", probando: "Checking the key with DeepSeek…", cifrando: "Encrypting…",
+      malaClave: "DeepSeek rejected this key.", sinSaldo: "The key works, but the account has no balance. Encrypted anyway: add balance before using it.",
+      red: "Could not check the key ({e}). Encrypted anyway.", listo: "Done. Copy the block below."
+    },
+    es: {
+      volver: "← Volver al editor", tit: "Preparar el acceso a la IA para tu equipo",
+      intro: "Tus compañeros podrán usar «Generar con IA» con una contraseña, sin ver nunca tu clave de DeepSeek.",
+      p1: "Escribe tu clave de API de DeepSeek y elige una contraseña. La clave se cifra aquí, en tu navegador: no se envía a ningún sitio salvo a DeepSeek, una vez, para comprobar que funciona.",
+      p2: "Obtienes un bloque cifrado. Publícalo como docs/acceso.json en el repositorio (o envíaselo a quien mantenga la web). Sin la contraseña no se puede leer.",
+      p3: "Pasa la contraseña a tus compañeros por un canal privado.",
+      aviso: "<strong>Usa una contraseña larga</strong>, como una frase de 4–5 palabras: el bloque cifrado es público. Crea una <strong>clave aparte</strong> solo para esto, con <strong>poco saldo</strong>, y si la contraseña se filtra, revoca la clave en DeepSeek y repite estos pasos.",
+      clave: "Clave de API de DeepSeek", pass: "Contraseña del equipo (mínimo 16 caracteres)", pass2: "Repite la contraseña",
+      crear: "Comprobar la clave y cifrarla", bloque: "Bloque cifrado (acceso.json)", copiar: "Copiar", copiado: "Copiado.", bajar: "Descargar acceso.json",
+      despues: "Este bloque no contiene la clave legible. Puedes compartirlo sin problema; la contraseña, guárdala en privado.",
+      faltaClave: "Escribe la clave.", corta: "La contraseña necesita al menos 16 caracteres. Una frase de varias palabras va muy bien.",
+      distintas: "Las contraseñas no coinciden.", probando: "Comprobando la clave con DeepSeek…", cifrando: "Cifrando…",
+      malaClave: "DeepSeek ha rechazado esta clave.", sinSaldo: "La clave funciona, pero la cuenta no tiene saldo. Se cifra igualmente: añade saldo antes de usarla.",
+      red: "No se ha podido comprobar la clave ({e}). Se cifra igualmente.", listo: "Hecho. Copia el bloque de abajo."
+    }
+  };
+  var idioma = "en";
+  try { idioma = localStorage.getItem("generador-formacion:idioma") || "en"; } catch (e) {}
+  if (!TXT[idioma]) idioma = "en";
+  function T(k, v) { return TXT[idioma][k].replace(/\{(\w+)\}/g, function (_, x) { return v ? v[x] : ""; }); }
+  document.documentElement.lang = idioma;
+  document.title = T("tit");
+  document.querySelectorAll("[data-t]").forEach(function (e) { e.textContent = T(e.dataset.t); });
+  document.querySelectorAll("[data-t-html]").forEach(function (e) { e.innerHTML = T(e.dataset.tHtml); });
+
+  var $ = function (id) { return document.getElementById(id); };
+  var ITER = 600000;
+  function estado(m, tipo) { $("estado").textContent = m; $("estado").className = "ia-estado" + (tipo ? " " + tipo : ""); }
+  function b64(buf) { return btoa(String.fromCharCode.apply(null, new Uint8Array(buf))); }
+
+  function probar(clave) {
+    return fetch("https://api.deepseek.com/chat/completions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + clave },
+      body: JSON.stringify({ model: "deepseek-chat", messages: [{ role: "user", content: "Hi" }], max_tokens: 1 })
+    }).then(function (r) { return r.status; });
+  }
+
+  function cifrar(clave, pass) {
+    var enc = new TextEncoder();
+    var salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12));
+    return crypto.subtle.importKey("raw", enc.encode(pass), "PBKDF2", false, ["deriveKey"]).then(function (base) {
+      return crypto.subtle.deriveKey({ name: "PBKDF2", salt: salt, iterations: ITER, hash: "SHA-256" },
+        base, { name: "AES-GCM", length: 256 }, false, ["encrypt"]);
+    }).then(function (k) {
+      return crypto.subtle.encrypt({ name: "AES-GCM", iv: iv }, k, enc.encode(clave));
+    }).then(function (ct) {
+      return { v: 1, proveedor: "deepseek", modelo: "deepseek-chat", kdf: "PBKDF2-SHA256", iter: ITER, salt: b64(salt), iv: b64(iv), ct: b64(ct) };
+    });
+  }
+
+  $("form").onsubmit = function (ev) {
+    ev.preventDefault();
+    var clave = $("clave").value.trim(), pass = $("pass").value;
+    if (!clave) return estado(T("faltaClave"), "error");
+    if (pass.length < 16) return estado(T("corta"), "error");
+    if (pass !== $("pass2").value) return estado(T("distintas"), "error");
+    $("crear").disabled = true;
+    var nota = "";
+    estado(T("probando"));
+    probar(clave).then(function (s) {
+      if (s === 401) throw new Error(T("malaClave"));
+      if (s === 402) nota = T("sinSaldo");
+    }, function (e) { nota = T("red", { e: e.message }); }).then(function () {
+      estado(T("cifrando"));
+      return cifrar(clave, pass);
+    }).then(function (a) {
+      $("salida").value = JSON.stringify(a, null, 2) + "\n";
+      $("resultado").hidden = false;
+      $("clave").value = ""; $("pass").value = ""; $("pass2").value = "";
+      estado(nota || T("listo"), nota ? "" : "ok");
+      $("salida").focus();
+    }).catch(function (e) { estado(e.message, "error"); })
+      .then(function () { $("crear").disabled = false; });
+  };
+  $("copiar").onclick = function () {
+    navigator.clipboard.writeText($("salida").value).then(function () { estado(T("copiado"), "ok"); });
+  };
+  $("bajar").onclick = function () {
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([$("salida").value], { type: "application/json" }));
+    a.download = "acceso.json";
+    document.body.appendChild(a); a.click(); a.remove();
+  };
+})();
+</script>
+</body>
+</html>

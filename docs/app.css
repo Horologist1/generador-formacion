@@ -91,3 +91,35 @@ button:focus-visible, select:focus-visible, input:focus-visible { outline: 3px s
   #guion { min-height: 420px; }
   .ed-cab { padding: 12px 16px; }
 }
+
+/* generar con IA */
+.ed-btn-ia { border-color: var(--ed-marca); color: var(--ed-marca); }
+.ed-btn-ia span[aria-hidden] { font-size: 16px; }
+.ed-btn:disabled { opacity: .55; cursor: wait; }
+dialog.ia { width: min(720px, calc(100vw - 32px)); max-height: calc(100vh - 32px); border: 0; border-radius: 16px; padding: 0; box-shadow: 0 24px 70px rgba(10, 20, 35, .35); color: var(--ed-tinta); background: var(--ed-papel); }
+dialog.ia::backdrop { background: rgba(15, 25, 40, .5); }
+.ia form { padding: 22px 24px 20px; display: flex; flex-direction: column; gap: 14px; font-size: 16px; }
+.ia h2 { margin: 0; font-size: 22px; }
+.ia-intro { margin: 0; color: var(--ed-tinta-2); }
+.ia-campo { display: flex; flex-direction: column; gap: 6px; font-size: 15px; font-weight: 600; flex: 1; min-width: 0; }
+.ia-campo textarea, .ia-campo input, .ia-campo select { font-size: 16px; font-weight: 400; border: 1px solid var(--ed-linea); border-radius: 9px; padding: 10px 12px; background: var(--ed-papel); width: 100%; }
+.ia-campo textarea { resize: vertical; min-height: 150px; line-height: 1.5; }
+.ia-campo select, .ia-campo input { height: 44px; padding-top: 0; padding-bottom: 0; }
+.ia-fila { display: flex; gap: 14px; flex-wrap: wrap; }
+.ia-fila .ia-campo { min-width: 200px; }
+.ia-acceso { border: 1px solid var(--ed-linea); border-radius: 12px; padding: 10px 16px 14px; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+.ia-acceso legend { font-weight: 600; font-size: 15px; padding: 0 6px; }
+.ia-acceso [hidden] { display: none; }
+.ia-radios { display: flex; gap: 8px 22px; flex-wrap: wrap; font-size: 15px; }
+#ia-fila-clave { display: flex; flex-direction: column; gap: 10px; }
+#ia-fila-clave[hidden], #ia-fila-pass[hidden] { display: none; }
+.ia-nota { margin: 0; font-size: 14px; color: var(--ed-tinta-2); }
+.ia-nota[hidden] { display: none; }
+.ia-estado { min-height: 24px; font-size: 15px; color: var(--ed-tinta-2); }
+.ia-estado.error { color: var(--ed-mal); }
+.ia-estado.ok { color: var(--ed-ok); }
+.ia-botones { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.ia-hueco { flex: 1; }
+.ia form.ocupado textarea, .ia form.ocupado input, .ia form.ocupado select { opacity: .6; pointer-events: none; }
+textarea:focus-visible, .ia-campo input:focus-visible { outline: 3px solid #f59f00; outline-offset: 1px; }
+@media (max-width: 560px) { .ia-hueco { display: none; } .ia-botones .ed-btn { flex: 1 1 auto; } }

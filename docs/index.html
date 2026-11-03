@@ -18,9 +18,11 @@
         <option value="" data-t="elegir"></option>
         <option value="ejemplos/curso_en.md" data-t="ej_en"></option>
         <option value="ejemplos/curso_es.md" data-t="ej_es"></option>
+        <option value="ejemplos/datos_en.md" data-t="ej_datos"></option>
         <option value="nuevo" data-t="ej_nuevo"></option>
       </select>
     </label>
+    <button class="ed-btn ed-btn-ia" id="btn-ia"><span aria-hidden="true">✦</span> <span data-t="ia_btn"></span></button>
     <button class="ed-btn" id="btn-ayuda" aria-expanded="false" data-t="como"></button>
     <div class="ed-idioma" role="group" aria-label="Language / Idioma">
       <button data-idioma="en" aria-pressed="true">EN</button><button data-idioma="es" aria-pressed="false">ES</button>
@@ -110,8 +112,56 @@
   </div>
 </aside>
 
+
+<dialog class="ia" id="dlg-ia" aria-labelledby="ia-titulo">
+  <form id="ia-form" novalidate>
+    <h2 id="ia-titulo" data-t="ia_tit"></h2>
+    <p class="ia-intro" data-t="ia_intro"></p>
+    <label class="ia-campo"><span data-t="ia_material"></span>
+      <textarea id="ia-material" rows="7" data-t-ph="ia_ph"></textarea>
+    </label>
+    <div class="ia-fila">
+      <label class="ia-campo"><span data-t="ia_idioma"></span>
+        <select id="ia-idioma"><option value="en">English</option><option value="es">Español</option></select>
+      </label>
+      <label class="ia-campo"><span data-t="ia_largo"></span>
+        <select id="ia-largo"><option value="corto" data-t="ia_corto"></option><option value="medio" data-t="ia_medio" selected></option><option value="largo" data-t="ia_largo_l"></option></select>
+      </label>
+    </div>
+    <label class="ia-campo"><span data-t="ia_extra"></span>
+      <input type="text" id="ia-extra" data-t-ph="ia_extra_ph">
+    </label>
+    <fieldset class="ia-acceso">
+      <legend data-t="ia_acceso"></legend>
+      <div class="ia-radios">
+        <label class="ed-check"><input type="radio" name="ia-modo" id="ia-modo-equipo"> <span data-t="ia_equipo"></span></label>
+        <label class="ed-check"><input type="radio" name="ia-modo" id="ia-modo-propia" checked> <span data-t="ia_propia"></span></label>
+      </div>
+      <p class="ia-nota" id="ia-sin-equipo" data-t-html="ia_sin_equipo"></p>
+      <label class="ia-campo" id="ia-fila-pass" hidden><span data-t="ia_pass"></span>
+        <input type="password" id="ia-pass" autocomplete="current-password">
+      </label>
+      <div id="ia-fila-clave">
+        <label class="ia-campo"><span data-t="ia_clave"></span>
+          <input type="password" id="ia-clave" autocomplete="off" placeholder="sk-…">
+        </label>
+        <label class="ed-check"><input type="checkbox" id="ia-recordar"> <span data-t="ia_recordar"></span></label>
+      </div>
+    </fieldset>
+    <p class="ia-nota" data-t="ia_privacidad"></p>
+    <div class="ia-estado" id="ia-estado" role="status" aria-live="polite"></div>
+    <div class="ia-botones">
+      <button type="button" class="ed-btn" id="ia-copiar" data-t="ia_copiar"></button>
+      <span class="ia-hueco"></span>
+      <button type="button" class="ed-btn" id="ia-cancelar" data-t="ia_cerrar"></button>
+      <button type="submit" class="ed-btn ed-btn-pri" id="ia-generar" data-t="ia_generar"></button>
+    </div>
+  </form>
+</dialog>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="motor/video.js"></script>
 <script src="app.js"></script>
+<script src="ia.js"></script>
 </body>
 </html>
