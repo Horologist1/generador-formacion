@@ -1,33 +1,36 @@
 <!doctype html>
-<html lang="es">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Generador de formación</title>
-<meta name="description" content="Escribe un guion y obtén un vídeo animado o una lección SCORM. Todo funciona en tu navegador.">
+<title>Training Video Builder</title>
+<meta name="description" content="Write a script and get an animated video or a SCORM lesson. Everything runs in your browser.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%228%22 fill=%22%230f5f73%22/%3E%3Cpath d=%22M12 9l11 7-11 7z%22 fill=%22white%22/%3E%3C/svg%3E">
 <link rel="stylesheet" href="motor/video.css">
 <link rel="stylesheet" href="app.css">
 </head>
 <body>
 <header class="ed-cab">
-  <div class="ed-logo"><span></span>Generador de formación</div>
+  <div class="ed-logo"><span></span><b data-t="app"></b></div>
   <div class="ed-cab-acciones">
-    <label class="ed-campo-cab">Ejemplo
+    <label class="ed-campo-cab"><span data-t="ejemplo"></span>
       <select id="sel-ejemplo">
-        <option value="">Elegir…</option>
-        <option value="ejemplos/curso_en.md">Phishing (inglés)</option>
-        <option value="ejemplos/curso_es.md">Phishing (español)</option>
-        <option value="nuevo">Guion en blanco</option>
+        <option value="" data-t="elegir"></option>
+        <option value="ejemplos/curso_en.md" data-t="ej_en"></option>
+        <option value="ejemplos/curso_es.md" data-t="ej_es"></option>
+        <option value="nuevo" data-t="ej_nuevo"></option>
       </select>
     </label>
-    <button class="ed-btn" id="btn-ayuda" aria-expanded="false">Cómo se escribe</button>
+    <button class="ed-btn" id="btn-ayuda" aria-expanded="false" data-t="como"></button>
+    <div class="ed-idioma" role="group" aria-label="Language / Idioma">
+      <button data-idioma="en" aria-pressed="true">EN</button><button data-idioma="es" aria-pressed="false">ES</button>
+    </div>
     <div class="ed-menu">
-      <button class="ed-btn ed-btn-pri" id="btn-exportar" aria-expanded="false" aria-haspopup="true">Exportar ▾</button>
+      <button class="ed-btn ed-btn-pri" id="btn-exportar" aria-expanded="false" aria-haspopup="true"><span data-t="exportar"></span> ▾</button>
       <div class="ed-menu-lista" id="menu-exportar" hidden>
-        <button data-exp="video"><strong>Vídeo animado (HTML)</strong><span>Un archivo que se reproduce en cualquier navegador.</span></button>
-        <button data-exp="scorm"><strong>Lección SCORM (.zip)</strong><span>Para el LMS, con preguntas puntuables.</span></button>
-        <button data-exp="guion"><strong>Guion (.md)</strong><span>Para guardarlo o generar la versión con voz en local.</span></button>
+        <button data-exp="video"><strong data-t="exp_video"></strong><span data-t="exp_video_d"></span></button>
+        <button data-exp="scorm"><strong data-t="exp_scorm"></strong><span data-t="exp_scorm_d"></span></button>
+        <button data-exp="guion"><strong data-t="exp_guion"></strong><span data-t="exp_guion_d"></span></button>
       </div>
     </div>
   </div>
@@ -36,54 +39,75 @@
 <div class="ed-aviso" id="aviso" hidden></div>
 
 <main class="ed-main">
-  <section class="ed-panel ed-izq" aria-label="Guion">
+  <section class="ed-panel ed-izq" data-t-aria="guion">
     <div class="ed-barra">
-      <span class="ed-etq">Añadir escena:</span>
-      <button class="ed-chip" data-plantilla="portada">Portada</button>
-      <button class="ed-chip" data-plantilla="contenido">Lista</button>
-      <button class="ed-chip" data-plantilla="cifra">Cifra</button>
-      <button class="ed-chip" data-plantilla="correo">Correo</button>
-      <button class="ed-chip" data-plantilla="pregunta">Pregunta</button>
-      <button class="ed-chip" data-plantilla="cierre">Cierre</button>
+      <span class="ed-etq" data-t="anadir"></span>
+      <button class="ed-chip" data-plantilla="portada" data-t="p_portada"></button>
+      <button class="ed-chip" data-plantilla="contenido" data-t="p_contenido"></button>
+      <button class="ed-chip" data-plantilla="cifra" data-t="p_cifra"></button>
+      <button class="ed-chip" data-plantilla="correo" data-t="p_correo"></button>
+      <button class="ed-chip" data-plantilla="pregunta" data-t="p_pregunta"></button>
+      <button class="ed-chip" data-plantilla="cierre" data-t="p_cierre"></button>
     </div>
-    <textarea id="guion" spellcheck="false" aria-label="Texto del guion"></textarea>
+    <textarea id="guion" spellcheck="false" data-t-aria="guion"></textarea>
     <div class="ed-estado" id="estado" role="status"></div>
   </section>
 
-  <section class="ed-panel ed-der" aria-label="Vista previa">
+  <section class="ed-panel ed-der" data-t-aria="vista">
     <div class="ed-pantalla" id="pantalla"><div id="lienzo"></div></div>
     <div class="ed-controles">
-      <button class="ed-play" id="btn-play" aria-label="Reproducir">▶</button>
-      <input type="range" id="barra-tiempo" min="0" max="1000" value="0" aria-label="Posición">
+      <button class="ed-play" id="btn-play" aria-label="Play">▶</button>
+      <input type="range" id="barra-tiempo" min="0" max="1000" value="0" data-t-aria="posicion">
       <span class="ed-tiempo" id="tiempo">0:00 / 0:00</span>
     </div>
     <div class="ed-escenas" id="escenas"></div>
     <div class="ed-ajustes">
-      <label>Velocidad de lectura
-        <input type="number" id="ppm" min="100" max="220" step="5" value="150"> palabras/min
+      <label><span data-t="velocidad"></span>
+        <input type="number" id="ppm" min="100" max="220" step="5" value="150"> <span data-t="ppm"></span>
       </label>
-      <label class="ed-check"><input type="checkbox" id="chk-subs" checked> Texto de la narración en pantalla</label>
+      <label class="ed-check"><input type="checkbox" id="chk-subs" checked> <span data-t="subs"></span></label>
     </div>
-    <p class="ed-nota">Sin voz: cada frase dura lo que se tarda en leerla. Para la versión con voz, exporta el guion y genera el vídeo en local con <code>generador/video.py</code>.</p>
+    <p class="ed-nota" data-t-html="nota"></p>
   </section>
 </main>
 
 <aside class="ed-ayuda" id="ayuda" hidden>
-  <div class="ed-ayuda-cab"><h2>Cómo se escribe el guion</h2><button class="ed-btn" id="btn-cerrar-ayuda">Cerrar</button></div>
-  <table>
-    <tr><td><code>## Título</code></td><td>Empieza una escena nueva.</td></tr>
-    <tr><td><code>tipo: …</code></td><td><code>portada</code>, <code>contenido</code> (lista), <code>cifra</code>, <code>correo</code>, <code>pregunta</code> o <code>cierre</code>.</td></tr>
-    <tr><td><code>&gt; texto</code></td><td>Narración. En el vídeo sin voz aparece como texto en pantalla.</td></tr>
-    <tr><td><code>{1} {2} …</code></td><td>Dentro de la narración: en ese momento aparece el elemento 1, 2… (y en el correo, la cámara hace zoom).</td></tr>
-    <tr><td><code>- texto</code></td><td>Elemento de una lista. <code>**negrita**</code> para destacar.</td></tr>
-    <tr><td><code>cifra: 7 de cada 10</code></td><td>En escenas <code>cifra</code>: el primer número cuenta hacia arriba y se dibuja un pictograma.</td></tr>
-    <tr><td><code>```correo … ```</code></td><td>Un correo de ejemplo. Primera parte: <code>De:</code>, <code>Para:</code>, <code>Asunto:</code>; tras una línea en blanco, el cuerpo.</td></tr>
-    <tr><td><code>[[texto|nota]]</code></td><td>Dentro del correo: resalta «texto» y muestra la nota. <code>[[btn:Texto|nota]]</code> dibuja un botón.</td></tr>
-    <tr><td><code>pregunta: …</code></td><td>Opciones con <code>- [ ]</code> y la correcta con <code>- [x]</code>. Además <code>explicacion:</code> y, opcional, <code>repasar: Título de otra escena</code>.</td></tr>
-    <tr><td><code>[hackeó](jaqueó)</code></td><td>En pantalla se ve lo primero; la voz (versión local) dice lo segundo.</td></tr>
-  </table>
-  <p>La cabecera entre <code>---</code> define <code>titulo</code>, <code>subtitulo</code>, <code>empresa</code>, <code>idioma</code> (es / en), <code>color</code> y <code>nota_aprobado</code>.</p>
-  <p>Tu guion se guarda automáticamente <strong>solo en este navegador</strong>; no se envía a ningún servidor.</p>
+  <div class="ed-ayuda-cab"><h2 data-t="ayuda_tit"></h2><button class="ed-btn" id="btn-cerrar-ayuda" data-t="cerrar"></button></div>
+
+  <div data-solo="en">
+    <table>
+      <tr><td><code>## Title</code></td><td>Starts a new scene.</td></tr>
+      <tr><td><code>tipo: …</code></td><td>Scene type: <code>portada</code> (title), <code>contenido</code> (list), <code>cifra</code> (big number), <code>correo</code> (email), <code>pregunta</code> (question) or <code>cierre</code> (summary).</td></tr>
+      <tr><td><code>&gt; text</code></td><td>Narration. In the voiceless video it is shown as on-screen text.</td></tr>
+      <tr><td><code>{1} {2} …</code></td><td>Inside the narration: at that moment item 1, 2… appears (in the email scene, the camera zooms in on it).</td></tr>
+      <tr><td><code>- text</code></td><td>A list item. Use <code>**bold**</code> to highlight.</td></tr>
+      <tr><td><code>cifra: 7 in 10</code></td><td>In <code>cifra</code> scenes: the first number counts up and a pictogram is drawn. Add <code>texto:</code> for the caption.</td></tr>
+      <tr><td><code>```correo … ```</code></td><td>A sample email. First the header lines (<code>From:</code>, <code>To:</code>, <code>Subject:</code>), then a blank line and the body.</td></tr>
+      <tr><td><code>[[text|note]]</code></td><td>Inside the email: highlights “text” and shows the note. <code>[[btn:Label|note]]</code> draws a button.</td></tr>
+      <tr><td><code>pregunta: …</code></td><td>The question. Options with <code>- [ ]</code>, the correct one with <code>- [x]</code>. Also <code>explicacion:</code> (explanation) and, optionally, <code>repasar: Title of another scene</code> (where to review if wrong).</td></tr>
+      <tr><td><code>[hacked](hackt)</code></td><td>The screen shows the first part; the voice (local version) says the second.</td></tr>
+    </table>
+    <p>The header between <code>---</code> sets <code>titulo</code> (title), <code>subtitulo</code>, <code>empresa</code> (company), <code>idioma</code> (en / es), <code>color</code> and <code>nota_aprobado</code> (pass mark).</p>
+    <p>The keywords stay in Spanish so that scripts work the same in both languages.</p>
+    <p>Your script is saved automatically <strong>in this browser only</strong>; it is never sent to any server.</p>
+  </div>
+
+  <div data-solo="es">
+    <table>
+      <tr><td><code>## Título</code></td><td>Empieza una escena nueva.</td></tr>
+      <tr><td><code>tipo: …</code></td><td><code>portada</code>, <code>contenido</code> (lista), <code>cifra</code>, <code>correo</code>, <code>pregunta</code> o <code>cierre</code>.</td></tr>
+      <tr><td><code>&gt; texto</code></td><td>Narración. En el vídeo sin voz aparece como texto en pantalla.</td></tr>
+      <tr><td><code>{1} {2} …</code></td><td>Dentro de la narración: en ese momento aparece el elemento 1, 2… (y en el correo, la cámara hace zoom).</td></tr>
+      <tr><td><code>- texto</code></td><td>Elemento de una lista. <code>**negrita**</code> para destacar.</td></tr>
+      <tr><td><code>cifra: 7 de cada 10</code></td><td>En escenas <code>cifra</code>: el primer número cuenta hacia arriba y se dibuja un pictograma. Añade <code>texto:</code> para el pie.</td></tr>
+      <tr><td><code>```correo … ```</code></td><td>Un correo de ejemplo. Primero la cabecera (<code>De:</code>, <code>Para:</code>, <code>Asunto:</code>); tras una línea en blanco, el cuerpo.</td></tr>
+      <tr><td><code>[[texto|nota]]</code></td><td>Dentro del correo: resalta «texto» y muestra la nota. <code>[[btn:Texto|nota]]</code> dibuja un botón.</td></tr>
+      <tr><td><code>pregunta: …</code></td><td>Opciones con <code>- [ ]</code> y la correcta con <code>- [x]</code>. Además <code>explicacion:</code> y, opcional, <code>repasar: Título de otra escena</code>.</td></tr>
+      <tr><td><code>[hackeó](jaqueó)</code></td><td>En pantalla se ve lo primero; la voz (versión local) dice lo segundo.</td></tr>
+    </table>
+    <p>La cabecera entre <code>---</code> define <code>titulo</code>, <code>subtitulo</code>, <code>empresa</code>, <code>idioma</code> (es / en), <code>color</code> y <code>nota_aprobado</code>.</p>
+    <p>Tu guion se guarda automáticamente <strong>solo en este navegador</strong>; no se envía a ningún servidor.</p>
+  </div>
 </aside>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>

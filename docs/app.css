@@ -30,6 +30,10 @@ code { font-family: Consolas, "SFMono-Regular", Menlo, monospace; font-size: .92
 .ed-btn { height: 40px; padding: 0 16px; border-radius: 9px; border: 1px solid var(--ed-linea); background: var(--ed-papel); font-weight: 600; font-size: 15px; cursor: pointer; }
 .ed-btn:hover { border-color: var(--ed-marca); }
 .ed-btn-pri { background: var(--ed-marca); color: #fff; border-color: var(--ed-marca); }
+.ed-idioma { display: inline-flex; border: 1px solid var(--ed-linea); border-radius: 9px; overflow: hidden; height: 40px; }
+.ed-idioma button { border: 0; background: var(--ed-papel); padding: 0 12px; font-size: 14px; font-weight: 700; cursor: pointer; min-width: 44px; }
+.ed-idioma button[aria-pressed="true"] { background: var(--ed-tinta); color: #fff; }
+[data-solo][hidden] { display: none; }
 .ed-menu { position: relative; }
 .ed-menu-lista { position: absolute; right: 0; top: 46px; z-index: 20; width: 340px; background: var(--ed-papel); border: 1px solid var(--ed-linea); border-radius: 12px; box-shadow: 0 12px 36px rgba(20, 30, 45, .16); padding: 6px; }
 .ed-menu-lista button { display: block; width: 100%; text-align: left; border: 0; background: none; padding: 12px 14px; border-radius: 9px; cursor: pointer; }

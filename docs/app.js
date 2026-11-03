@@ -10,6 +10,65 @@
   var CLAVE_BORRADOR = "generador-formacion:borrador";
   var $ = function (id) { return document.getElementById(id); };
 
+  // ================================================================ idioma de la interfaz
+  var TXT = {
+    en: {
+      app: "Training Video Builder", ejemplo: "Example", elegir: "Choose…", ej_en: "Phishing (English)", ej_es: "Phishing (Spanish)",
+      ej_nuevo: "Blank script", como: "How to write", exportar: "Export",
+      exp_video: "Animated video (HTML)", exp_video_d: "A single file that plays in any browser.",
+      exp_scorm: "SCORM lesson (.zip)", exp_scorm_d: "For your LMS, with scored questions.",
+      exp_guion: "Script (.md)", exp_guion_d: "To keep it, or to render the voiced version locally.",
+      anadir: "Add scene:", p_portada: "Title", p_contenido: "List", p_cifra: "Big number", p_correo: "Email",
+      p_pregunta: "Question", p_cierre: "Summary", guion: "Script", vista: "Preview", posicion: "Position",
+      velocidad: "Reading speed", ppm: "words/min", subs: "Show narration text on screen",
+      nota: "No voice: each sentence lasts as long as it takes to read it. For the voiced version, export the script and render the video locally with <code>generador/video.py</code>.",
+      ayuda_tit: "How to write the script", cerrar: "Close", reproducir: "Play", pausa: "Pause",
+      estado: "{n} scenes · {d} of video · saved in this browser", vacio: "Choose an example or start a blank script.",
+      cargado: "Another script has been loaded.", recuperar: "Restore the previous one", noEjemplo: "The example could not be loaded.",
+      noExport: "Export failed: {e}. If you opened the file directly, use the published website instead.", noZip: "the compression library (JSZip) did not load",
+      sinEscenas: "The script has no scenes. Each scene starts with “## Title”.", escena: "Scene {n} (“{t}”): ",
+      tipoMal: "unknown type “{x}”. Use: {l}.", faltaCorreo: "the ```correo … ``` block is missing.", faltaCifra: "the “cifra: …” line is missing.",
+      faltaPreg: "the “pregunta: …” line is missing.", dosOpc: "needs at least two “- [ ]” options.", marcaOk: "mark the correct answer with “- [x]”.",
+      repasarMal: "“repasar” points to “{x}”, which does not exist.", archivo: "course"
+    },
+    es: {
+      app: "Generador de formación", ejemplo: "Ejemplo", elegir: "Elegir…", ej_en: "Phishing (inglés)", ej_es: "Phishing (español)",
+      ej_nuevo: "Guion en blanco", como: "Cómo se escribe", exportar: "Exportar",
+      exp_video: "Vídeo animado (HTML)", exp_video_d: "Un archivo que se reproduce en cualquier navegador.",
+      exp_scorm: "Lección SCORM (.zip)", exp_scorm_d: "Para el LMS, con preguntas puntuables.",
+      exp_guion: "Guion (.md)", exp_guion_d: "Para guardarlo o generar la versión con voz en local.",
+      anadir: "Añadir escena:", p_portada: "Portada", p_contenido: "Lista", p_cifra: "Cifra", p_correo: "Correo",
+      p_pregunta: "Pregunta", p_cierre: "Cierre", guion: "Guion", vista: "Vista previa", posicion: "Posición",
+      velocidad: "Velocidad de lectura", ppm: "palabras/min", subs: "Texto de la narración en pantalla",
+      nota: "Sin voz: cada frase dura lo que se tarda en leerla. Para la versión con voz, exporta el guion y genera el vídeo en local con <code>generador/video.py</code>.",
+      ayuda_tit: "Cómo se escribe el guion", cerrar: "Cerrar", reproducir: "Reproducir", pausa: "Pausa",
+      estado: "{n} escenas · {d} de vídeo · guardado en este navegador", vacio: "Elige un ejemplo o empieza un guion en blanco.",
+      cargado: "Se ha cargado otro guion.", recuperar: "Recuperar el anterior", noEjemplo: "No se ha podido cargar el ejemplo.",
+      noExport: "No se ha podido exportar: {e}. Si has abierto el archivo directamente, ábrelo desde la web publicada.", noZip: "no se ha cargado la librería de compresión (JSZip)",
+      sinEscenas: "El guion no tiene escenas. Cada escena empieza con «## Título».", escena: "Escena {n} («{t}»): ",
+      tipoMal: "tipo «{x}» desconocido. Usa: {l}.", faltaCorreo: "falta el bloque ```correo … ```.", faltaCifra: "falta la línea «cifra: …».",
+      faltaPreg: "falta la línea «pregunta: …».", dosOpc: "necesita al menos dos opciones «- [ ]».", marcaOk: "marca la respuesta correcta con «- [x]».",
+      repasarMal: "«repasar» apunta a «{x}», que no existe.", archivo: "curso"
+    }
+  };
+  var CLAVE_IDIOMA = "generador-formacion:idioma";
+  var idiomaUI = "en";
+  try { idiomaUI = localStorage.getItem(CLAVE_IDIOMA) || "en"; } catch (e) {}
+  if (!TXT[idiomaUI]) idiomaUI = "en";
+  function T(clave, vars) {
+    return String(TXT[idiomaUI][clave]).replace(/\{(\w+)\}/g, function (_, k) { return vars && vars[k] !== undefined ? vars[k] : ""; });
+  }
+  function aplicarIdioma() {
+    document.documentElement.lang = idiomaUI;
+    document.title = T("app");
+    document.querySelectorAll("[data-t]").forEach(function (e) { e.textContent = T(e.dataset.t); });
+    document.querySelectorAll("[data-t-html]").forEach(function (e) { e.innerHTML = T(e.dataset.tHtml); });
+    document.querySelectorAll("[data-t-aria]").forEach(function (e) { e.setAttribute("aria-label", T(e.dataset.tAria)); });
+    document.querySelectorAll("[data-solo]").forEach(function (e) { e.hidden = e.dataset.solo !== idiomaUI; });
+    document.querySelectorAll("[data-idioma]").forEach(function (b) { b.setAttribute("aria-pressed", b.dataset.idioma === idiomaUI); });
+  }
+  aplicarIdioma();
+
   // ================================================================ lectura del guion
   function esc(s) { return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
   function inline(t) { return esc(t).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>"); }
@@ -132,18 +191,18 @@
   var TIPOS = ["portada", "contenido", "cifra", "correo", "pregunta", "cierre"];
   function validar(meta, diaps) {
     var avisos = [], titulos = {};
-    if (!diaps.length) avisos.push("El guion no tiene escenas. Cada escena empieza con «## Título».");
+    if (!diaps.length) avisos.push(T("sinEscenas"));
     diaps.forEach(function (d) { titulos[d.titulo] = true; });
     diaps.forEach(function (d) {
-      var donde = "Escena " + d.num + " («" + d.titulo + "»): ";
-      if (TIPOS.indexOf(d.tipo) < 0) avisos.push(donde + "tipo «" + d.tipo + "» desconocido. Usa: " + TIPOS.join(", ") + ".");
-      if (d.tipo === "correo" && !d.correo) avisos.push(donde + "falta el bloque ```correo … ```.");
-      if (d.tipo === "cifra" && !d.cifra) avisos.push(donde + "falta la línea «cifra: …».");
+      var donde = T("escena", { n: d.num, t: d.titulo });
+      if (TIPOS.indexOf(d.tipo) < 0) avisos.push(donde + T("tipoMal", { x: d.tipo, l: TIPOS.join(", ") }));
+      if (d.tipo === "correo" && !d.correo) avisos.push(donde + T("faltaCorreo"));
+      if (d.tipo === "cifra" && !d.cifra) avisos.push(donde + T("faltaCifra"));
       if (d.tipo === "pregunta") {
-        if (!d.pregunta) avisos.push(donde + "falta la línea «pregunta: …».");
-        if (d.opciones.length < 2) avisos.push(donde + "necesita al menos dos opciones «- [ ]».");
-        if (!d.opciones.some(function (o) { return o.correcta; })) avisos.push(donde + "marca la respuesta correcta con «- [x]».");
-        if (d.repasar && !titulos[d.repasar]) avisos.push(donde + "«repasar» apunta a «" + d.repasar + "», que no existe.");
+        if (!d.pregunta) avisos.push(donde + T("faltaPreg"));
+        if (d.opciones.length < 2) avisos.push(donde + T("dosOpc"));
+        if (!d.opciones.some(function (o) { return o.correcta; })) avisos.push(donde + T("marcaOk"));
+        if (d.repasar && !titulos[d.repasar]) avisos.push(donde + T("repasarMal", { x: d.repasar }));
       }
     });
     return avisos;
@@ -329,7 +388,7 @@
       estado.className = "ed-estado" + (avisos.length ? " error" : "");
       estado.innerHTML = avisos.length
         ? "<ul>" + avisos.map(function (a) { return "<li>" + esc(a) + "</li>"; }).join("") + "</ul>"
-        : datos.escenas.length + " escenas · " + mmss(datos.duracion) + " de vídeo · guardado en este navegador";
+        : T("estado", { n: datos.escenas.length, d: mmss(datos.duracion) });
     } catch (err) {
       estado.className = "ed-estado error";
       estado.textContent = err.message || String(err);
@@ -349,7 +408,7 @@
     $("barra-tiempo").value = Math.round(t / datos.duracion * 1000) || 0;
     $("tiempo").textContent = mmss(t) + " / " + mmss(datos.duracion);
     $("btn-play").textContent = reproduciendo ? "❚❚" : "▶";
-    $("btn-play").setAttribute("aria-label", reproduciendo ? "Pausa" : "Reproducir");
+    $("btn-play").setAttribute("aria-label", T(reproduciendo ? "pausa" : "reproducir"));
     var k = 0;
     datos.escenas.forEach(function (e, i) { if (t >= e.ini) k = i; });
     document.querySelectorAll("#escenas button").forEach(function (b, i) { b.classList.toggle("actual", i === k); });
@@ -404,21 +463,34 @@
   });
 
   // --------------------------------------------------------------- plantillas de escena
-  var PLANTILLAS = {
-    portada: "## Título del curso\ntipo: portada\n\n> Hola, y bienvenido. En los próximos minutos vas a aprender…\n",
-    contenido: "## Título de la lista\ntipo: contenido\n\n- **Idea 1**: explicación breve.\n- **Idea 2**: explicación breve.\n- **Idea 3**: explicación breve.\n\n> Frase de introducción.\n> {1} Explica la idea 1.\n> {2} Explica la idea 2.\n> {3} Explica la idea 3.\n",
-    cifra: "## Por qué importa\ntipo: cifra\ncifra: 3 de cada 5\ntexto: empleados han recibido un correo sospechoso este año.\n\n> Tres de cada cinco empleados han recibido un correo sospechoso este año.\n",
-    correo: "## Un ejemplo\ntipo: correo\n\n```correo\nDe: Remitente <[[direccion@ejemplo.com|Qué tiene de raro]]>\nPara: tú\nAsunto: [[Asunto del correo|Por qué es sospechoso]]\n\nHola,\n\nCuerpo del mensaje.\n\n[[btn:Botón|Adónde lleva en realidad]]\n```\n\n> Mira este correo.\n> {1} Fíjate en el remitente.\n> {2} El asunto mete prisa.\n> {3} Y el botón lleva a una web falsa.\n",
-    pregunta: "## Comprueba lo aprendido\ntipo: pregunta\npregunta: ¿Escribe aquí la pregunta?\n- [ ] Opción incorrecta.\n- [x] Opción correcta.\n- [ ] Otra opción incorrecta.\nexplicacion: Por qué la correcta es la correcta.\n\n> Vamos a comprobarlo.\n",
-    cierre: "## Resumen\ntipo: cierre\n\n- Primera idea clave.\n- Segunda idea clave.\n- Tercera idea clave.\n\n> Recuerda las tres ideas clave.\n> Gracias por tu tiempo.\n"
+  var PLANTILLAS_IDIOMA = {
+    es: {
+      portada: "## Título del curso\ntipo: portada\n\n> Hola, y bienvenido. En los próximos minutos vas a aprender…\n",
+      contenido: "## Título de la lista\ntipo: contenido\n\n- **Idea 1**: explicación breve.\n- **Idea 2**: explicación breve.\n- **Idea 3**: explicación breve.\n\n> Frase de introducción.\n> {1} Explica la idea 1.\n> {2} Explica la idea 2.\n> {3} Explica la idea 3.\n",
+      cifra: "## Por qué importa\ntipo: cifra\ncifra: 3 de cada 5\ntexto: empleados han recibido un correo sospechoso este año.\n\n> Tres de cada cinco empleados han recibido un correo sospechoso este año.\n",
+      correo: "## Un ejemplo\ntipo: correo\n\n```correo\nDe: Remitente <[[direccion@ejemplo.com|Qué tiene de raro]]>\nPara: tú\nAsunto: [[Asunto del correo|Por qué es sospechoso]]\n\nHola,\n\nCuerpo del mensaje.\n\n[[btn:Botón|Adónde lleva en realidad]]\n```\n\n> Mira este correo.\n> {1} Fíjate en el remitente.\n> {2} El asunto mete prisa.\n> {3} Y el botón lleva a una web falsa.\n",
+      pregunta: "## Comprueba lo aprendido\ntipo: pregunta\npregunta: ¿Escribe aquí la pregunta?\n- [ ] Opción incorrecta.\n- [x] Opción correcta.\n- [ ] Otra opción incorrecta.\nexplicacion: Por qué la correcta es la correcta.\n\n> Vamos a comprobarlo.\n",
+      cierre: "## Resumen\ntipo: cierre\n\n- Primera idea clave.\n- Segunda idea clave.\n- Tercera idea clave.\n\n> Recuerda las tres ideas clave.\n> Gracias por tu tiempo.\n",
+      cabecera: "---\ntitulo: Título del curso\nsubtitulo: Formación interna\nempresa: Tu empresa\nidioma: es\ncolor: \"#0f5f73\"\nnota_aprobado: 50\n---\n\n"
+    },
+    en: {
+      portada: "## Course title\ntipo: portada\n\n> Hi, and welcome. In the next few minutes you'll learn…\n",
+      contenido: "## List title\ntipo: contenido\n\n- **Idea 1**: short explanation.\n- **Idea 2**: short explanation.\n- **Idea 3**: short explanation.\n\n> Introductory sentence.\n> {1} Explain idea 1.\n> {2} Explain idea 2.\n> {3} Explain idea 3.\n",
+      cifra: "## Why it matters\ntipo: cifra\ncifra: 3 in 5\ntexto: employees received a suspicious email this year.\n\n> Three out of five employees received a suspicious email this year.\n",
+      correo: "## An example\ntipo: correo\n\n```correo\nFrom: Sender <[[address@example.com|What looks odd]]>\nTo: you\nSubject: [[Email subject|Why it is suspicious]]\n\nHi,\n\nMessage body.\n\n[[btn:Button|Where it really leads]]\n```\n\n> Take a look at this email.\n> {1} Look at the sender.\n> {2} The subject rushes you.\n> {3} And the button leads to a fake site.\n",
+      pregunta: "## Check what you've learned\ntipo: pregunta\npregunta: Write your question here?\n- [ ] Wrong option.\n- [x] Correct option.\n- [ ] Another wrong option.\nexplicacion: Why the correct answer is correct.\n\n> Let's check.\n",
+      cierre: "## Summary\ntipo: cierre\n\n- First key idea.\n- Second key idea.\n- Third key idea.\n\n> Remember the three key ideas.\n> Thanks for your time.\n",
+      cabecera: "---\ntitulo: Course title\nsubtitulo: Internal training\nempresa: Your company\nidioma: en\ncolor: \"#0f5f73\"\nnota_aprobado: 50\n---\n\n"
+    }
   };
+  function plantilla(k) { return PLANTILLAS_IDIOMA[idiomaUI][k]; }
   document.querySelector(".ed-barra").onclick = function (ev) {
     var b = ev.target.closest("[data-plantilla]");
     if (!b) return;
     var texto = editor.value, pos = editor.selectionStart;
     var sig = texto.slice(pos).search(/^## /m);   // se inserta al final de la escena actual
     var donde = sig < 0 ? texto.length : pos + sig;
-    var bloque = (texto.slice(0, donde).endsWith("\n\n") ? "" : texto.slice(0, donde).endsWith("\n") ? "\n" : "\n\n") + PLANTILLAS[b.dataset.plantilla] + (sig < 0 ? "" : "\n");
+    var bloque = (texto.slice(0, donde).endsWith("\n\n") ? "" : texto.slice(0, donde).endsWith("\n") ? "\n" : "\n\n") + plantilla(b.dataset.plantilla) + (sig < 0 ? "" : "\n");
     editor.setRangeText(bloque, donde, donde, "end");
     var inicioTitulo = donde + bloque.indexOf("## ") + 3;
     editor.focus();
@@ -440,15 +512,25 @@
       guardarBorrador();
       t = 0;
       reconstruir(false);
-      aviso('Se ha cargado otro guion. <button id="btn-recuperar">Recuperar el anterior</button>');
+      aviso(esc(T("cargado")) + ' <button id="btn-recuperar">' + esc(T("recuperar")) + "</button>");
     };
-    if (v === "nuevo") cargar("---\ntitulo: Título del curso\nsubtitulo: Formación interna\nempresa: Tu empresa\nidioma: es\ncolor: \"#0f5f73\"\nnota_aprobado: 50\n---\n\n" + PLANTILLAS.portada);
-    else fetch(v).then(function (r) { return r.text(); }).then(cargar).catch(function () { aviso("No se ha podido cargar el ejemplo."); });
+    if (v === "nuevo") cargar(plantilla("cabecera") + plantilla("portada"));
+    else fetch(v).then(function (r) { return r.text(); }).then(cargar).catch(function () { aviso(esc(T("noEjemplo"))); });
   };
   $("aviso").onclick = function (ev) {
     if (ev.target.id === "btn-recuperar" && previo !== null) {
       editor.value = previo; previo = null; guardarBorrador(); reconstruir(false); aviso("");
     }
+  };
+
+  // --------------------------------------------------------------- idioma
+  document.querySelector(".ed-idioma").onclick = function (ev) {
+    var b = ev.target.closest("[data-idioma]");
+    if (!b || b.dataset.idioma === idiomaUI) return;
+    idiomaUI = b.dataset.idioma;
+    try { localStorage.setItem(CLAVE_IDIOMA, idiomaUI); } catch (e) {}
+    aplicarIdioma();
+    if (datos) reconstruir(false);
   };
 
   // --------------------------------------------------------------- ayuda y menú
@@ -468,8 +550,8 @@
 
   // --------------------------------------------------------------- exportaciones
   function nombreArchivo() {
-    return (limpio(guion && guion.meta.titulo) || "curso").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "")
-      .replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "curso";
+    return (limpio(guion && guion.meta.titulo) || T("archivo")).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "")
+      .replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || T("archivo");
   }
   function descargar(contenido, nombre, tipo) {
     var url = URL.createObjectURL(contenido instanceof Blob ? contenido : new Blob([contenido], { type: tipo }));
@@ -489,7 +571,7 @@
     if (tipo === "video") return exportarVideo(nombre).catch(errorExportar);
     if (tipo === "scorm") return exportarScorm(nombre).catch(errorExportar);
   };
-  function errorExportar(e) { aviso("No se ha podido exportar: " + esc(e.message || e) + ". Si has abierto el archivo directamente, ábrelo desde la web publicada."); }
+  function errorExportar(e) { aviso(esc(T("noExport", { e: e.message || e }))); }
 
   function exportarVideo(nombre) {
     return Promise.all([texto("motor/video.css"), texto("motor/video.js")]).then(function (r) {
@@ -498,9 +580,9 @@
       var html = '<!doctype html>\n<html lang="' + datos.meta.idioma + '">\n<head>\n<meta charset="utf-8">\n' +
         '<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>' + (datos.meta.titulo || "Vídeo") + "</title>\n" +
         "<style>\n" + r[0] + "\n" + CSS_REPRODUCTOR + "\n</style>\n</head>\n<body>\n" +
-        '<div class="rv-marco" id="marco"><div id="lienzo"></div><button class="rv-grande" id="grande" aria-label="Reproducir">▶</button></div>\n' +
-        '<div class="rv-ctrl"><button id="pp" aria-label="Reproducir">▶</button><input type="range" id="barra" min="0" max="1000" value="0" aria-label="Posición">' +
-        '<span id="tiempo">0:00</span><button id="pc" aria-label="Pantalla completa">⛶</button></div>\n' +
+        '<div class="rv-marco" id="marco"><div id="lienzo"></div><button class="rv-grande" id="grande" aria-label="Play">▶</button></div>\n' +
+        '<div class="rv-ctrl"><button id="pp" aria-label="Play">▶</button><input type="range" id="barra" min="0" max="1000" value="0" aria-label="Position">' +
+        '<span id="tiempo">0:00</span><button id="pc" aria-label="Full screen">⛶</button></div>\n' +
         "<script>window.DATOS = " + json + ";</script>\n<script>\n" + r[1] + "\n</script>\n<script>\n" + reproductor + "\n</script>\n</body>\n</html>\n";
       descargar(html, nombre + "-video.html", "text/html;charset=utf-8");
     });
@@ -556,7 +638,7 @@
   };
 
   function exportarScorm(nombre) {
-    if (!window.JSZip) return Promise.reject(new Error("no se ha cargado la librería de compresión (JSZip)"));
+    if (!window.JSZip) return Promise.reject(new Error(T("noZip")));
     var archivos = ["index.html", "estilo.css", "reproductor.js", "scorm.js"];
     return Promise.all(archivos.map(function (f) { return texto("leccion/" + f); })).then(function (r) {
       var leccion = construirLeccion(guion.meta, guion.diapositivas, +$("ppm").value || 150);
@@ -575,6 +657,6 @@
   (document.fonts ? document.fonts.ready : Promise.resolve()).then(function () {
     if (guardado) { editor.value = guardado; reconstruir(false); }
     else texto("ejemplos/curso_en.md").then(function (txt) { editor.value = txt; reconstruir(false); })
-      .catch(function () { $("estado").textContent = "Elige un ejemplo o empieza un guion en blanco."; });
+      .catch(function () { $("estado").textContent = T("vacio"); });
   });
 })();

@@ -1,14 +1,14 @@
-# Generador de formación
+# Training Video Builder
 
-Escribe un guion de texto y obtén:
+Write a plain-text script and get:
 
-- un **vídeo animado** (motion graphics sincronizados con la narración),
-- una **lección interactiva SCORM** con preguntas para el LMS,
-- o un **vídeo narrado a partir de un PowerPoint**.
+- an **animated video** (motion graphics timed to the narration),
+- an **interactive SCORM lesson** with scored questions for your LMS,
+- or a **narrated video from a PowerPoint deck**.
 
-**Editor web (sin instalar nada):** https://horologist1.github.io/generador-formacion/
-En la web todo ocurre en tu navegador: el guion no se envía a ningún servidor. Exporta vídeo animado en HTML, SCORM o el guion.
+**Web editor (nothing to install):** https://horologist1.github.io/generador-formacion/
+Everything runs in your browser: the script is never sent to any server. Export an animated HTML video, a SCORM package or the script itself. The interface is available in English and Spanish.
 
-**Versión con voz (local):** los scripts de `generador/` añaden narración con voces neuronales open source (Qwen3-TTS, Chatterbox, Piper) y renderizan MP4. Instrucciones en [LEEME.md](LEEME.md).
+**Voiced version (local):** the scripts in `generador/` add narration with open-source neural voices (Qwen3-TTS, Chatterbox, Piper) and render MP4 files. Setup and usage (in Spanish): [LEEME.md](LEEME.md).
 
-Los cursos de `curso/` y `docs/ejemplos/` son ficticios (empresa inventada «Grupo Alvento»).
+The sample courses in `curso/` and `docs/ejemplos/` are fictional (made-up company “Grupo Alvento”).
