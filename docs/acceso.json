@@ -1,0 +1,10 @@
+{
+  "v": 1,
+  "proveedor": "deepseek",
+  "modelo": "deepseek-chat",
+  "kdf": "PBKDF2-SHA256",
+  "iter": 600000,
+  "salt": "FepsZFLzfSc3BOwGh3eGLQ==",
+  "iv": "PhCKKHCvNTlOjdeN",
+  "ct": "ONK5IuU0HVQlVsYc1UWbS6o8w73u8/RA9TMVffwUyeLvaATI7yFeb5ibJ/sUmKZcDuJp"
+}
