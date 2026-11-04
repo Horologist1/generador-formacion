@@ -197,7 +197,9 @@ def datos_escena(d, frases, roles, ini, fin):
     for f in frases:
         if f["paso"] and f["paso"] not in pasos:
             pasos[f["paso"]] = f["ini"]
-    elementos = len(d.get("vinetas", [])) or len(re.findall(r"\[\[", d.get("correo", "")))
+    elementos = 0 if tipo == "mito" else len(d.get("vinetas", [])) or len(re.findall(r"\[\[", d.get("correo", "")))
+    if tipo == "mito" and 1 not in pasos:   # la tarjeta se gira a mitad de la narración si no hay {1}
+        pasos[1] = round(t_habla0 + (t_habla1 - t_habla0) * .45, 3)
     for k in range(1, elementos + 1):
         if k not in pasos:
             hueco = (t_habla1 - t_habla0) * .75
@@ -206,6 +208,9 @@ def datos_escena(d, frases, roles, ini, fin):
 
     if d.get("vinetas"):
         e["vinetas"] = [inline(v) for v in d["vinetas"]]
+    for k in ("cita", "autor", "mito", "realidad", "unidad", "si", "no"):
+        if d.get(k):
+            e[k] = inline(d[k])
     if tipo == "cifra":
         e["cifra"], e["texto"] = html_seguro(d.get("cifra", "")), inline(d.get("texto", ""))
     if tipo == "correo":

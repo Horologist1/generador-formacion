@@ -8,11 +8,11 @@ window.crearVideo = function (stage, V) {
   stage.classList.add("vstage");
   // escala real del lienzo en pantalla (en la web se muestra reducido): las medidas se pasan a px del lienzo
   function escala() { return stage.getBoundingClientRect().width / W || 1; }
-  var L = {
-    en: { comprueba: "Quick check", pregunta: "Question {n} of {t}", piensa: "Pause and think" },
-    es: { comprueba: "Comprueba", pregunta: "Pregunta {n} de {t}", piensa: "Piensa un momento" }
-  }[(M.idioma || "es").slice(0, 2)] || null;
-  L = L || { comprueba: "Quick check", pregunta: "Question {n} of {t}", piensa: "Pause and think" };
+  var LL = {
+    en: { comprueba: "Quick check", pregunta: "Question {n} of {t}", piensa: "Pause and think", mito: "Myth", realidad: "Fact", si: "Do", no: "Don't" },
+    es: { comprueba: "Comprueba", pregunta: "Pregunta {n} de {t}", piensa: "Piensa un momento", mito: "Mito", realidad: "Realidad", si: "Haz esto", no: "Evita esto" }
+  };
+  var L = LL[(M.idioma || "es").slice(0, 2)] || LL.en;
   stage.style.setProperty("--marca", M.color || "#0f5f73");
 
   // ------------------------------------------------------------ utilidades de animación
@@ -42,6 +42,18 @@ window.crearVideo = function (stage, V) {
       .map(function (w) { return '<span class="w">' + w + "</span>"; }).join("");
   }
   var CHECK = '<svg viewBox="0 0 50 50"><path d="M11 26 L21 36 L40 15"/></svg>';
+  var CRUZ = '<svg viewBox="0 0 50 50"><path d="M15 15 L35 35 M35 15 L15 35"/></svg>';
+  // "<strong>Clave</strong>: resto" -> { k: "Clave", r: "resto" }
+  function partir(v) {
+    var m = /^<strong>(.+?)<\/strong>\s*:?\s*([\s\S]*)$/.exec(v || "");
+    return m ? { k: m[1], r: m[2] } : { k: "", r: v || "" };
+  }
+  function iniciales(s) {
+    return String(s || "").replace(/<[^>]+>/g, "").split(",")[0].trim().split(/\s+/).slice(0, 2)
+      .map(function (w) { return w.charAt(0).toUpperCase(); }).join("");
+  }
+  // momento en que aparece cada elemento y cuál es el "activo" (el último que ha aparecido)
+  function activoEn(t, tiempos) { var a = -1; tiempos.forEach(function (tp, i) { if (t >= tp) a = i; }); return a; }
   function trazo(path, p) {  // dibuja un trazo SVG progresivamente
     var len = path.getTotalLength();
     path.style.strokeDasharray = len;
@@ -271,6 +283,219 @@ window.crearVideo = function (stage, V) {
         numR.textContent = Math.max(0, Math.ceil(c1 - Math.max(t, c0)));
         // explicación (ocupa la columna derecha, donde estaba la cuenta atrás)
         entra(ex, t, d.tExpl - .2, .7, 50);
+      };
+    },
+
+    // pasos de un procedimiento: nodos numerados unidos por flechas que se dibujan
+    proceso: function (d, raiz) {
+      var ti = el("div", "e-titulo", d.titulo, raiz);
+      var vs = d.vinetas || [], n = vs.length, Y = 440;
+      var x0 = n > 1 ? 280 : 960, sep = n > 1 ? 1360 / (n - 1) : 0, ancho = Math.min(520, n > 1 ? sep - 36 : 640);
+      var xs = vs.map(function (_, i) { return x0 + sep * i; });
+      var svg = "";
+      for (var i = 1; i < n; i++) {
+        var a = xs[i - 1] + 84, b = xs[i] - 84;
+        svg += '<path class="pr-seg" d="M' + a + " " + Y + " H" + b + '"/><path class="pr-flecha" d="M' + (b - 20) + " " + (Y - 20) + " L" + b + " " + Y + " L" + (b - 20) + " " + (Y + 20) + '"/>';
+      }
+      el("div", "pr-lineas", '<svg width="1920" height="1080">' + svg + "</svg>", raiz);
+      var segs = raiz.querySelectorAll(".pr-seg"), flechas = raiz.querySelectorAll(".pr-flecha");
+      var nodos = vs.map(function (v, i) {
+        var no = el("div", "pr-nodo", String(i + 1), raiz);
+        no.style.left = (xs[i] - 66) + "px"; no.style.top = (Y - 66) + "px";
+        var p = partir(v);
+        var tx = el("div", "pr-txt", (p.k ? "<b>" + p.k + "</b>" : "") + "<span>" + p.r + "</span>", raiz);
+        tx.style.left = (xs[i] - ancho / 2) + "px"; tx.style.width = ancho + "px";
+        return { no: no, tx: tx };
+      });
+      var tiempos = vs.map(function (_, i) { return d.pasos[i + 1]; });
+      return function (t) {
+        entra(ti, t, .2, .6, 30);
+        var act = activoEn(t, tiempos);
+        nodos.forEach(function (x, i) {
+          var tp = tiempos[i], p = prog(t, tp, .55);
+          x.no.style.opacity = clamp(p * 2);
+          x.no.style.transform = "scale(" + (.3 + .7 * E.back(p)) + ")";
+          x.no.classList.toggle("activo", i === act && t < d.fin_local - .5);
+          x.no.classList.toggle("hecho", i < act || (i === act && t >= d.fin_local - .5));
+          entra(x.tx, t, tp + .15, .6, 30);
+          x.tx.classList.toggle("activo", i === act && t < d.fin_local - .5);
+          if (i > 0) {
+            trazo(segs[i - 1], E.inOut(prog(t, tp - .55, .5)));
+            trazo(flechas[i - 1], E.out(prog(t, tp - .1, .25)));
+          }
+        });
+      };
+    },
+
+    // dos columnas: lo que sí y lo que no
+    comparar: function (d, raiz) {
+      var ti = el("div", "e-titulo", d.titulo, raiz);
+      var cols = {
+        si: el("div", "cm-col si", '<div class="cm-cab"><div class="cm-ico">' + CHECK + "</div><div>" + (d.si || L.si) + "</div></div>", raiz),
+        no: el("div", "cm-col no", '<div class="cm-cab"><div class="cm-ico">' + CRUZ + "</div><div>" + (d.no || L.no) + "</div></div>", raiz)
+      };
+      var items = (d.vinetas || []).map(function (v) {
+        var m = /^\[(s[ií]|yes|ok|no)\]\s*/i.exec(v), lado = m && m[1].toLowerCase() === "no" ? "no" : "si";
+        var it = el("div", "cm-item", m ? v.slice(m[0].length) : v, cols[lado]);
+        return { it: it, lado: lado };
+      });
+      var tiempos = items.map(function (_, i) { return d.pasos[i + 1]; });
+      return function (t) {
+        entra(ti, t, .2, .6, 30);
+        ["si", "no"].forEach(function (k, j) {
+          var c = cols[k], p = prog(t, .35 + j * .25, .6);
+          c.style.opacity = clamp(p * 2);
+          c.style.transform = "translateY(" + (1 - E.out(p)) * 60 + "px)";
+          var ico = c.querySelector(".cm-ico");
+          ico.style.transform = "scale(" + E.back(prog(t, .55 + j * .25, .5)) + ")";
+          c.querySelectorAll(".cm-ico path").forEach(function (pa) { trazo(pa, E.out(prog(t, .8 + j * .25, .5))); });
+        });
+        var act = activoEn(t, tiempos);
+        items.forEach(function (x, i) {
+          var p = prog(t, tiempos[i], .6), k = E.back(p);
+          x.it.style.opacity = clamp(p * 2);
+          x.it.style.transform = "translateX(" + (1 - k) * (x.lado === "si" ? -90 : 90) + "px)";
+          x.it.classList.toggle("activo", i === act && t < d.fin_local - .5);
+        });
+      };
+    },
+
+    // línea de tiempo: la línea avanza hasta cada hito; las etiquetas alternan arriba y abajo
+    linea: function (d, raiz) {
+      var ti = el("div", "e-titulo", d.titulo, raiz);
+      var vs = d.vinetas || [], n = vs.length, Y = 620, X0 = 180, X1 = 1740;
+      var sep = (X1 - X0) / Math.max(1, n), ancho = Math.min(470, n > 1 ? 2 * sep - 40 : 700);
+      var base = el("div", "li-base", null, raiz), avance = el("div", "li-avance", null, raiz);
+      base.style.left = avance.style.left = X0 + "px"; base.style.width = (X1 - X0) + "px"; base.style.top = avance.style.top = (Y - 5) + "px";
+      var hitos = vs.map(function (v, i) {
+        var x = X0 + sep * (i + .5), arriba = i % 2 === 0, p = partir(v);
+        var tallo = el("div", "li-tallo" + (arriba ? " arriba" : ""), null, raiz);
+        tallo.style.left = (x - 3) + "px"; tallo.style.top = (arriba ? Y - 80 : Y) + "px";
+        var punto = el("div", "li-punto", null, raiz);
+        punto.style.left = (x - 24) + "px"; punto.style.top = (Y - 24) + "px";
+        var et = el("div", "li-et" + (arriba ? " arriba" : ""), (p.k ? "<b>" + p.k + "</b>" : "") + "<span>" + p.r + "</span>", raiz);
+        et.style.left = (x - ancho / 2) + "px"; et.style.width = ancho + "px";
+        if (arriba) et.style.bottom = (1080 - Y + 92) + "px"; else et.style.top = (Y + 92) + "px";
+        return { x: x, tallo: tallo, punto: punto, et: et };
+      });
+      var tiempos = vs.map(function (_, i) { return d.pasos[i + 1]; });
+      return function (t) {
+        entra(ti, t, .2, .6, 30);
+        base.style.transform = "scaleX(" + E.inOut(prog(t, .3, 1.0)) + ")";
+        var cub = X0;
+        hitos.forEach(function (h, i) { cub = lerp(cub, h.x, E.inOut(prog(t, tiempos[i] - .45, .5))); });
+        if (t >= d.fin_local - .9) cub = lerp(cub, X1, E.inOut(prog(t, d.fin_local - .9, .6)));
+        avance.style.width = (cub - X0) + "px";
+        var act = activoEn(t, tiempos);
+        hitos.forEach(function (h, i) {
+          var tp = tiempos[i], p = prog(t, tp, .5);
+          h.punto.style.opacity = clamp(p * 3);
+          h.punto.style.transform = "scale(" + E.back(p) + ")";
+          h.punto.classList.toggle("activo", i === act);
+          h.punto.classList.toggle("hecho", i < act);
+          h.tallo.style.transform = "scaleY(" + E.out(prog(t, tp + .1, .4)) + ")";
+          entra(h.et, t, tp + .2, .6, i % 2 === 0 ? 30 : -30);
+          h.et.classList.toggle("activo", i === act && t < d.fin_local - .5);
+        });
+      };
+    },
+
+    // gráfico de barras horizontales: crecen y la cifra cuenta
+    grafico: function (d, raiz) {
+      var ti = el("div", "e-titulo", d.titulo, raiz);
+      var filas = (d.vinetas || []).map(function (v) {
+        var m = /^([\s\S]*?)[:：]?\s*(-?\d[\d.,]*)\s*(%)?\s*$/.exec(v), num = 0, dec = 0;
+        if (m) {
+          var s = m[2];
+          if (/,\d{3}(\D|$)/.test(s) && s.indexOf(".") < 0) s = s.replace(/,/g, ""); else s = s.replace(/,/g, ".");
+          num = parseFloat(s) || 0;
+          dec = (s.split(".")[1] || "").length;
+        }
+        return { etq: m ? m[1].replace(/[:：\s]+$/, "") : v, num: num, dec: dec, pct: !!(m && m[3]), dest: /<strong>/.test(v) };
+      });
+      var unidad = d.unidad || (filas.some(function (f) { return f.pct; }) ? "%" : "");
+      var max = Math.max.apply(null, filas.map(function (f) { return f.num; }).concat([1e-9]));
+      if (unidad === "%" && max <= 100) max = 100;
+      var n = filas.length, alto = Math.min(124, 600 / Math.max(1, n)), y0 = 300 + (620 - alto * n) / 2, PISTA = 1000;
+      filas.forEach(function (f, i) {
+        var y = y0 + i * alto;
+        f.e = el("div", "gr-etq" + (f.dest ? " dest" : ""), f.etq, raiz);
+        f.e.style.top = y + "px"; f.e.style.height = alto * .8 + "px";
+        f.p = el("div", "gr-pista", null, raiz);
+        f.p.style.top = (y + alto * .12) + "px"; f.p.style.height = alto * .56 + "px"; f.p.style.width = PISTA + "px";
+        f.b = el("div", "gr-barra" + (f.dest ? " dest" : ""), null, f.p);
+        f.v = el("div", "gr-valor", "", raiz);
+        f.v.style.top = y + "px"; f.v.style.height = alto * .8 + "px";
+      });
+      var tiempos = filas.map(function (_, i) { return d.pasos[i + 1]; });
+      return function (t) {
+        entra(ti, t, .2, .6, 30);
+        filas.forEach(function (f, i) {
+          var tp = tiempos[i], pe = prog(t, tp - .3, .5), pb = E.out(prog(t, tp, 1.2));
+          f.e.style.opacity = f.p.style.opacity = clamp(pe * 2);
+          var w = PISTA * (f.num / max) * pb;
+          f.b.style.width = w + "px";
+          f.v.style.left = (740 + w + 26) + "px";
+          f.v.style.opacity = clamp(prog(t, tp, .3) * 2);
+          f.v.textContent = (f.num * pb).toFixed(f.dec) + unidad;
+        });
+      };
+    },
+
+    // cita: comillas grandes, el texto se "enciende" al ritmo de la narración y aparece el autor
+    cita: function (d, raiz) {
+      var com = el("div", "ct-comillas", "“", raiz);
+      var barra = el("div", "ct-barra", null, raiz);
+      var cont = el("div", "ct-cont", null, raiz);
+      var tx = el("div", "ct-texto", palabras(d.cita || ""), cont);
+      var au = el("div", "ct-autor", '<div class="ct-ini">' + iniciales(d.autor) + "</div><div>" + (d.autor || "") + "</div>", cont);
+      var ws = tx.querySelectorAll(".w");
+      var largo = (d.cita || "").replace(/<[^>]+>/g, "").length;
+      tx.style.fontSize = (largo < 90 ? 78 : largo < 170 ? 64 : 54) + "px";
+      // centrado vertical según el alto real del texto
+      raiz.style.visibility = "visible";
+      var alto = cont.getBoundingClientRect().height / escala();
+      raiz.style.visibility = "";
+      var top = Math.max(250, (1080 - alto) / 2 - 10);
+      cont.style.top = top + "px";
+      barra.style.top = top + "px"; barra.style.height = alto + "px";
+      com.style.top = (top - 250) + "px";
+      var f0 = d.frases[0], f1 = d.frases[d.frases.length - 1];
+      var a = f0 ? f0.ini : .8, b = f1 ? f1.fin : d.fin_local - 1.5, fin = a + Math.max(1.5, (b - a) * .8);
+      return function (t) {
+        var pc = prog(t, .1, .8);
+        com.style.opacity = clamp(pc * 2) * .9;
+        com.style.transform = "scale(" + (.4 + .6 * E.back(pc)) + ") rotate(" + (1 - E.out(pc)) * -20 + "deg)";
+        barra.style.transform = "scaleY(" + E.inOut(prog(t, .4, .9)) + ")";
+        entra(tx, t, .3, .7, 30);
+        ws.forEach(function (w, i) {
+          var p = prog(t, a + (fin - a) * i / Math.max(1, ws.length), .35);
+          w.style.opacity = .2 + .8 * p;
+        });
+        entra(au, t, fin - .2, .7, 30, E.back);
+      };
+    },
+
+    // mito o realidad: la tarjeta se tacha y se gira
+    mito: function (d, raiz) {
+      var ti = el("div", "e-titulo", d.titulo, raiz);
+      var esc3d = el("div", "mt-escena", null, raiz);
+      var carta = el("div", "mt-carta", null, esc3d);
+      el("div", "mt-cara mt-frente", '<div class="mt-etq">' + L.mito + '</div><div class="mt-txt">' + (d.mito || "") + "</div>", carta);
+      el("div", "mt-cara mt-dorso", '<div class="mt-etq">' + L.realidad + '</div><div class="mt-txt">' + (d.realidad || "") + "</div>", carta);
+      var sello = el("div", "mt-sello", CRUZ, raiz);
+      var tg = d.pasos[1];
+      return function (t) {
+        entra(ti, t, .2, .6, 30);
+        var pe = prog(t, .35, .8);
+        esc3d.style.opacity = clamp(pe * 2);
+        var pg = E.inOut(prog(t, tg, .9));
+        var s = (.9 + .1 * E.back(pe)) * (1 - .07 * Math.sin(Math.PI * pg));
+        carta.style.transform = "scale(" + s + ") rotateY(" + (180 * pg) + "deg)";
+        var ps = prog(t, tg - .9, .45);
+        sello.style.opacity = ps > 0 && pg < .35 ? clamp(ps * 2) * (1 - pg / .35) : 0;
+        sello.style.transform = "scale(" + (2.2 - 1.2 * E.out(ps)) + ") rotate(-12deg)";
+        trazo(sello.querySelector("path"), E.out(prog(t, tg - .75, .35)));
       };
     },
 

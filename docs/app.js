@@ -14,7 +14,7 @@
   var TXT = {
     en: {
       app: "Training Video Builder", ejemplo: "Example", elegir: "Choose…", ej_en: "Phishing (English)", ej_es: "Phishing (Spanish)",
-      ej_datos: "Customer data (English)", ej_nuevo: "Blank script", como: "How to write", exportar: "Export",
+      ej_datos: "Customer data (English)", ej_tipos: "All scene types (English)", ej_nuevo: "Blank script", como: "How to write", exportar: "Export",
       exp_video: "Animated video (HTML)", exp_video_d: "A single file that plays in any browser.",
       exp_scorm: "SCORM lesson (.zip)", exp_scorm_d: "For your LMS, with scored questions.",
       exp_guion: "Script (.md)", exp_guion_d: "To keep it, or to render the voiced version locally.",
@@ -29,11 +29,15 @@
       sinEscenas: "The script has no scenes. Each scene starts with “## Title”.", escena: "Scene {n} (“{t}”): ",
       tipoMal: "unknown type “{x}”. Use: {l}.", faltaCorreo: "the ```correo … ``` block is missing.", faltaCifra: "the “cifra: …” line is missing.",
       faltaPreg: "the “pregunta: …” line is missing.", dosOpc: "needs at least two “- [ ]” options.", marcaOk: "mark the correct answer with “- [x]”.",
-      repasarMal: "“repasar” points to “{x}”, which does not exist.", archivo: "course"
+      repasarMal: "“repasar” points to “{x}”, which does not exist.", archivo: "course",
+      faltaItems: "needs at least two “- ” items.", demasiados: "too many items (max. {m}).",
+      faltaComparar: "mark the items with “- [si] …” (do) and “- [no] …” (don't).", faltaNumero: "each “- ” item must end with a number, e.g. “- Email: 45”.",
+      faltaCita: "the “cita: …” line is missing.", faltaMito: "needs a “mito: …” line and a “realidad: …” line.",
+      p_proceso: "Steps", p_comparar: "Do / Don't", p_linea: "Timeline", p_grafico: "Bar chart", p_cita: "Quote", p_mito: "Myth vs fact"
     },
     es: {
       app: "Generador de formación", ejemplo: "Ejemplo", elegir: "Elegir…", ej_en: "Phishing (inglés)", ej_es: "Phishing (español)",
-      ej_datos: "Datos de clientes (inglés)", ej_nuevo: "Guion en blanco", como: "Cómo se escribe", exportar: "Exportar",
+      ej_datos: "Datos de clientes (inglés)", ej_tipos: "Todos los tipos de escena (inglés)", ej_nuevo: "Guion en blanco", como: "Cómo se escribe", exportar: "Exportar",
       exp_video: "Vídeo animado (HTML)", exp_video_d: "Un archivo que se reproduce en cualquier navegador.",
       exp_scorm: "Lección SCORM (.zip)", exp_scorm_d: "Para el LMS, con preguntas puntuables.",
       exp_guion: "Guion (.md)", exp_guion_d: "Para guardarlo o generar la versión con voz en local.",
@@ -48,7 +52,11 @@
       sinEscenas: "El guion no tiene escenas. Cada escena empieza con «## Título».", escena: "Escena {n} («{t}»): ",
       tipoMal: "tipo «{x}» desconocido. Usa: {l}.", faltaCorreo: "falta el bloque ```correo … ```.", faltaCifra: "falta la línea «cifra: …».",
       faltaPreg: "falta la línea «pregunta: …».", dosOpc: "necesita al menos dos opciones «- [ ]».", marcaOk: "marca la respuesta correcta con «- [x]».",
-      repasarMal: "«repasar» apunta a «{x}», que no existe.", archivo: "curso"
+      repasarMal: "«repasar» apunta a «{x}», que no existe.", archivo: "curso",
+      faltaItems: "necesita al menos dos elementos «- ».", demasiados: "demasiados elementos (máx. {m}).",
+      faltaComparar: "marca los elementos con «- [si] …» y «- [no] …».", faltaNumero: "cada elemento «- » debe acabar en un número, p. ej. «- Correo: 45».",
+      faltaCita: "falta la línea «cita: …».", faltaMito: "necesita una línea «mito: …» y otra «realidad: …».",
+      p_proceso: "Pasos", p_comparar: "Sí / No", p_linea: "Línea de tiempo", p_grafico: "Gráfico", p_cita: "Cita", p_mito: "Mito o realidad"
     }
   };
   var CLAVE_IDIOMA = "generador-formacion:idioma";
@@ -112,7 +120,7 @@
       if (s[0] === ">") d.narracion.push(s.slice(1).trim());
       else if (/^- \[( |x|X)\] /.test(s)) d.opciones.push({ texto: s.slice(6).trim(), correcta: s[3].toLowerCase() === "x" });
       else if (s.indexOf("- ") === 0) d.vinetas.push(s.slice(2).trim());
-      else if ((mm = /^(tipo|cifra|texto|pregunta|explicacion|repasar):\s*(.*)$/.exec(s))) d[mm[1]] = mm[2].trim();
+      else if ((mm = /^(tipo|cifra|texto|pregunta|explicacion|repasar|cita|autor|mito|realidad|unidad|si|no):\s*(.*)$/.exec(s))) d[mm[1]] = mm[2].trim();
     });
     return d;
   }
@@ -189,7 +197,9 @@
   }
 
   // ================================================================ validación
-  var TIPOS = ["portada", "contenido", "cifra", "correo", "pregunta", "cierre"];
+  var TIPOS = ["portada", "contenido", "proceso", "comparar", "linea", "grafico", "cifra", "cita", "mito", "correo", "pregunta", "cierre"];
+  var EXTRA = ["cita", "autor", "mito", "realidad", "unidad", "si", "no"];
+  var MAX_ITEMS = { contenido: 5, proceso: 5, linea: 6, grafico: 6, comparar: 6, cierre: 5 };
   function validar(meta, diaps) {
     var avisos = [], titulos = {};
     if (!diaps.length) avisos.push(T("sinEscenas"));
@@ -199,6 +209,13 @@
       if (TIPOS.indexOf(d.tipo) < 0) avisos.push(donde + T("tipoMal", { x: d.tipo, l: TIPOS.join(", ") }));
       if (d.tipo === "correo" && !d.correo) avisos.push(donde + T("faltaCorreo"));
       if (d.tipo === "cifra" && !d.cifra) avisos.push(donde + T("faltaCifra"));
+      if (["proceso", "linea", "grafico", "comparar"].indexOf(d.tipo) >= 0 && d.vinetas.length < 2) avisos.push(donde + T("faltaItems"));
+      if (MAX_ITEMS[d.tipo] && d.vinetas.length > MAX_ITEMS[d.tipo]) avisos.push(donde + T("demasiados", { m: MAX_ITEMS[d.tipo] }));
+      if (d.tipo === "comparar" && !(d.vinetas.some(function (v) { return /^\[(s[ií]|yes|ok)\]/i.test(v); }) && d.vinetas.some(function (v) { return /^\[no\]/i.test(v); })))
+        avisos.push(donde + T("faltaComparar"));
+      if (d.tipo === "grafico" && d.vinetas.some(function (v) { return !/\d[\d.,]*\s*%?\s*$/.test(v); })) avisos.push(donde + T("faltaNumero"));
+      if (d.tipo === "cita" && !d.cita) avisos.push(donde + T("faltaCita"));
+      if (d.tipo === "mito" && !(d.mito && d.realidad)) avisos.push(donde + T("faltaMito"));
       if (d.tipo === "pregunta") {
         if (!d.pregunta) avisos.push(donde + T("faltaPreg"));
         if (d.opciones.length < 2) avisos.push(donde + T("dosOpc"));
@@ -262,13 +279,15 @@
     var th1 = frases.length ? frases[frases.length - 1].fin : (fin - ini - COLA);
     var pasos = {};
     frases.forEach(function (f) { if (f.paso && !(f.paso in pasos)) pasos[f.paso] = f.ini; });
-    var elementos = d.vinetas.length || ((d.correo || "").match(/\[\[/g) || []).length;
+    var elementos = tipo === "mito" ? 0 : d.vinetas.length || ((d.correo || "").match(/\[\[/g) || []).length;
+    if (tipo === "mito" && !(1 in pasos)) pasos[1] = r3(th0 + (th1 - th0) * 0.45);
     for (var k = 1; k <= elementos; k++) {
       if (!(k in pasos)) pasos[k] = r3(th0 + 0.3 + (th1 - th0) * 0.75 * (k - 1) / Math.max(1, elementos));
     }
     e.pasos = pasos;
     if (d.vinetas.length) e.vinetas = d.vinetas.map(inline);
     if (tipo === "cifra") { e.cifra = esc(d.cifra || ""); e.texto = inline(d.texto || ""); }
+    EXTRA.forEach(function (k) { if (d[k]) e[k] = inline(d[k]); });
     if (tipo === "correo") {
       var c = correoAHtml(d.correo || "");
       e.correo_html = c.html; e.notas = c.notas.map(esc);
@@ -300,6 +319,7 @@
   }
 
   // ================================================================ lección interactiva (SCORM), sin audio
+  var TIPOS_LECCION = ["portada", "contenido", "cifra", "correo", "pregunta", "cierre"];
   function construirLeccion(meta, diaps, ppm) {
     var titulos = {}, total = 0;
     diaps.forEach(function (d) { titulos[d.titulo] = d.num; });
@@ -307,6 +327,13 @@
       var it = { num: d.num, titulo: esc(d.titulo), tipo: d.tipo || "contenido" };
       if (it.tipo === "correo" && d.correo) { var c = correoAHtml(d.correo); it.correo_html = c.html; it.notas = c.notas.map(esc); }
       if (d.vinetas.length) it.vinetas = d.vinetas.map(inline);
+      if (TIPOS_LECCION.indexOf(it.tipo) < 0) {   // tipos nuevos: en la lección interactiva se muestran como lista
+        var en = (meta.idioma || "es").slice(0, 2) === "en";
+        if (it.tipo === "comparar") it.vinetas = d.vinetas.map(function (v) { return inline(v.replace(/^\[no\]\s*/i, "✘ ").replace(/^\[(s[ií]|yes|ok)\]\s*/i, "✔ ")); });
+        if (it.tipo === "cita") it.vinetas = ["“" + inline(d.cita || "") + "”", "— " + inline(d.autor || "")];
+        if (it.tipo === "mito") it.vinetas = ["<strong>" + (en ? "Myth" : "Mito") + ":</strong> " + inline(d.mito || ""), "<strong>" + (en ? "Fact" : "Realidad") + ":</strong> " + inline(d.realidad || "")];
+        it.tipo = "contenido";
+      }
       if (d.cifra) it.cifra = inline(d.cifra);
       if (d.texto) it.texto = inline(d.texto);
       if (it.tipo === "pregunta") {
@@ -471,6 +498,12 @@
       cifra: "## Por qué importa\ntipo: cifra\ncifra: 3 de cada 5\ntexto: empleados han recibido un correo sospechoso este año.\n\n> Tres de cada cinco empleados han recibido un correo sospechoso este año.\n",
       correo: "## Un ejemplo\ntipo: correo\n\n```correo\nDe: Remitente <[[direccion@ejemplo.com|Qué tiene de raro]]>\nPara: tú\nAsunto: [[Asunto del correo|Por qué es sospechoso]]\n\nHola,\n\nCuerpo del mensaje.\n\n[[btn:Botón|Adónde lleva en realidad]]\n```\n\n> Mira este correo.\n> {1} Fíjate en el remitente.\n> {2} El asunto mete prisa.\n> {3} Y el botón lleva a una web falsa.\n",
       pregunta: "## Comprueba lo aprendido\ntipo: pregunta\npregunta: ¿Escribe aquí la pregunta?\n- [ ] Opción incorrecta.\n- [x] Opción correcta.\n- [ ] Otra opción incorrecta.\nexplicacion: Por qué la correcta es la correcta.\n\n> Vamos a comprobarlo.\n",
+      proceso: "## Cómo hacerlo\ntipo: proceso\n\n- **Paso 1**: qué hay que hacer.\n- **Paso 2**: qué hay que hacer.\n- **Paso 3**: qué hay que hacer.\n\n> Son tres pasos.\n> {1} Primero, …\n> {2} Después, …\n> {3} Y por último, …\n",
+      comparar: "## Qué hacer y qué no\ntipo: comparar\n\n- [si] Una buena práctica.\n- [no] Un error habitual.\n- [si] Otra buena práctica.\n- [no] Otro error habitual.\n\n> Veamos qué hacer y qué evitar.\n> {1} Haz esto…\n> {2} Pero nunca esto…\n> {3} Haz esto otro…\n> {4} Y evita esto otro.\n",
+      linea: "## Cronología\ntipo: linea\n\n- **2022**: qué pasó.\n- **2023**: qué pasó.\n- **2024**: qué pasó.\n\n> Así ha evolucionado.\n> {1} En 2022, …\n> {2} En 2023, …\n> {3} Y en 2024, …\n",
+      grafico: "## Los datos\ntipo: grafico\nunidad: %\n\n- Correo: 62\n- **Mensajería**: 24\n- Teléfono: 14\n\n> Estos son los datos.\n> {1} El correo, un 62 %.\n> {2} La mensajería, un 24 %.\n> {3} Y el teléfono, un 14 %.\n",
+      cita: "## En sus palabras\ntipo: cita\ncita: Una frase que resuma la idea clave.\nautor: Nombre Apellido, puesto\n\n> Lo resume muy bien una compañera: una frase que resuma la idea clave.\n",
+      mito: "## ¿Mito o realidad?\ntipo: mito\nmito: Una creencia falsa pero muy extendida.\nrealidad: Lo que de verdad ocurre.\n\n> Mucha gente cree que…\n> {1} Pero la realidad es otra: …\n",
       cierre: "## Resumen\ntipo: cierre\n\n- Primera idea clave.\n- Segunda idea clave.\n- Tercera idea clave.\n\n> Recuerda las tres ideas clave.\n> Gracias por tu tiempo.\n",
       cabecera: "---\ntitulo: Título del curso\nsubtitulo: Formación interna\nempresa: Tu empresa\nidioma: es\ncolor: \"#0f5f73\"\nnota_aprobado: 50\n---\n\n"
     },
@@ -480,6 +513,12 @@
       cifra: "## Why it matters\ntipo: cifra\ncifra: 3 in 5\ntexto: employees received a suspicious email this year.\n\n> Three out of five employees received a suspicious email this year.\n",
       correo: "## An example\ntipo: correo\n\n```correo\nFrom: Sender <[[address@example.com|What looks odd]]>\nTo: you\nSubject: [[Email subject|Why it is suspicious]]\n\nHi,\n\nMessage body.\n\n[[btn:Button|Where it really leads]]\n```\n\n> Take a look at this email.\n> {1} Look at the sender.\n> {2} The subject rushes you.\n> {3} And the button leads to a fake site.\n",
       pregunta: "## Check what you've learned\ntipo: pregunta\npregunta: Write your question here?\n- [ ] Wrong option.\n- [x] Correct option.\n- [ ] Another wrong option.\nexplicacion: Why the correct answer is correct.\n\n> Let's check.\n",
+      proceso: "## How to do it\ntipo: proceso\n\n- **Step 1**: what to do.\n- **Step 2**: what to do.\n- **Step 3**: what to do.\n\n> There are three steps.\n> {1} First, …\n> {2} Then, …\n> {3} And finally, …\n",
+      comparar: "## Do and don't\ntipo: comparar\n\n- [si] A good practice.\n- [no] A common mistake.\n- [si] Another good practice.\n- [no] Another common mistake.\n\n> Let's see what to do and what to avoid.\n> {1} Do this…\n> {2} But never this…\n> {3} Do this too…\n> {4} And avoid this.\n",
+      linea: "## Timeline\ntipo: linea\n\n- **2022**: what happened.\n- **2023**: what happened.\n- **2024**: what happened.\n\n> This is how it has evolved.\n> {1} In 2022, …\n> {2} In 2023, …\n> {3} And in 2024, …\n",
+      grafico: "## The numbers\ntipo: grafico\nunidad: %\n\n- Email: 62\n- **Messaging**: 24\n- Phone: 14\n\n> Here are the numbers.\n> {1} Email, 62 percent.\n> {2} Messaging, 24 percent.\n> {3} And phone, 14 percent.\n",
+      cita: "## In their words\ntipo: cita\ncita: A sentence that sums up the key idea.\nautor: First Last, role\n\n> A colleague puts it very well: a sentence that sums up the key idea.\n",
+      mito: "## Myth or fact?\ntipo: mito\nmito: A false but common belief.\nrealidad: What is really true.\n\n> Many people believe that…\n> {1} But the reality is different: …\n",
       cierre: "## Summary\ntipo: cierre\n\n- First key idea.\n- Second key idea.\n- Third key idea.\n\n> Remember the three key ideas.\n> Thanks for your time.\n",
       cabecera: "---\ntitulo: Course title\nsubtitulo: Internal training\nempresa: Your company\nidioma: en\ncolor: \"#0f5f73\"\nnota_aprobado: 50\n---\n\n"
     }

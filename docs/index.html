@@ -19,6 +19,7 @@
         <option value="ejemplos/curso_en.md" data-t="ej_en"></option>
         <option value="ejemplos/curso_es.md" data-t="ej_es"></option>
         <option value="ejemplos/datos_en.md" data-t="ej_datos"></option>
+        <option value="ejemplos/tipos_en.md" data-t="ej_tipos"></option>
         <option value="nuevo" data-t="ej_nuevo"></option>
       </select>
     </label>
@@ -46,7 +47,13 @@
       <span class="ed-etq" data-t="anadir"></span>
       <button class="ed-chip" data-plantilla="portada" data-t="p_portada"></button>
       <button class="ed-chip" data-plantilla="contenido" data-t="p_contenido"></button>
+      <button class="ed-chip" data-plantilla="proceso" data-t="p_proceso"></button>
+      <button class="ed-chip" data-plantilla="comparar" data-t="p_comparar"></button>
+      <button class="ed-chip" data-plantilla="linea" data-t="p_linea"></button>
+      <button class="ed-chip" data-plantilla="grafico" data-t="p_grafico"></button>
       <button class="ed-chip" data-plantilla="cifra" data-t="p_cifra"></button>
+      <button class="ed-chip" data-plantilla="cita" data-t="p_cita"></button>
+      <button class="ed-chip" data-plantilla="mito" data-t="p_mito"></button>
       <button class="ed-chip" data-plantilla="correo" data-t="p_correo"></button>
       <button class="ed-chip" data-plantilla="pregunta" data-t="p_pregunta"></button>
       <button class="ed-chip" data-plantilla="cierre" data-t="p_cierre"></button>
@@ -79,7 +86,7 @@
   <div data-solo="en">
     <table>
       <tr><td><code>## Title</code></td><td>Starts a new scene.</td></tr>
-      <tr><td><code>tipo: …</code></td><td>Scene type: <code>portada</code> (title), <code>contenido</code> (list), <code>cifra</code> (big number), <code>correo</code> (email), <code>pregunta</code> (question) or <code>cierre</code> (summary).</td></tr>
+      <tr><td><code>tipo: …</code></td><td>Scene type: <code>portada</code> (title), <code>contenido</code> (list), <code>proceso</code> (steps), <code>comparar</code> (do / don't), <code>linea</code> (timeline), <code>grafico</code> (bar chart), <code>cifra</code> (big number), <code>cita</code> (quote), <code>mito</code> (myth vs fact), <code>correo</code> (email), <code>pregunta</code> (question) or <code>cierre</code> (summary). The “Add scene” buttons insert a ready-made example of each.</td></tr>
       <tr><td><code>&gt; text</code></td><td>Narration. In the voiceless video it is shown as on-screen text.</td></tr>
       <tr><td><code>{1} {2} …</code></td><td>Inside the narration: at that moment item 1, 2… appears (in the email scene, the camera zooms in on it).</td></tr>
       <tr><td><code>- text</code></td><td>A list item. Use <code>**bold**</code> to highlight.</td></tr>
@@ -87,6 +94,11 @@
       <tr><td><code>```correo … ```</code></td><td>A sample email. First the header lines (<code>From:</code>, <code>To:</code>, <code>Subject:</code>), then a blank line and the body.</td></tr>
       <tr><td><code>[[text|note]]</code></td><td>Inside the email: highlights “text” and shows the note. <code>[[btn:Label|note]]</code> draws a button.</td></tr>
       <tr><td><code>pregunta: …</code></td><td>The question. Options with <code>- [ ]</code>, the correct one with <code>- [x]</code>. Also <code>explicacion:</code> (explanation) and, optionally, <code>repasar: Title of another scene</code> (where to review if wrong).</td></tr>
+      <tr><td><code>proceso</code> / <code>linea</code></td><td>One <code>- **Step or date**: text</code> line per step (up to 5) or milestone (up to 6).</td></tr>
+      <tr><td><code>comparar</code></td><td><code>- [si] …</code> for what to do and <code>- [no] …</code> for what to avoid. Optional column titles: <code>si:</code> and <code>no:</code>.</td></tr>
+      <tr><td><code>grafico</code></td><td>One bar per line: <code>- Label: 45</code>. Optional <code>unidad: %</code>. A <code>**bold**</code> label gets a highlighted bar.</td></tr>
+      <tr><td><code>cita</code></td><td><code>cita:</code> the quote and <code>autor:</code> who said it.</td></tr>
+      <tr><td><code>mito</code></td><td><code>mito:</code> the false belief and <code>realidad:</code> the truth. The card flips at <code>{1}</code>.</td></tr>
       <tr><td><code>[hacked](hackt)</code></td><td>The screen shows the first part; the voice (local version) says the second.</td></tr>
     </table>
     <p>The header between <code>---</code> sets <code>titulo</code> (title), <code>subtitulo</code>, <code>empresa</code> (company), <code>idioma</code> (en / es), <code>color</code> and <code>nota_aprobado</code> (pass mark).</p>
@@ -97,7 +109,7 @@
   <div data-solo="es">
     <table>
       <tr><td><code>## Título</code></td><td>Empieza una escena nueva.</td></tr>
-      <tr><td><code>tipo: …</code></td><td><code>portada</code>, <code>contenido</code> (lista), <code>cifra</code>, <code>correo</code>, <code>pregunta</code> o <code>cierre</code>.</td></tr>
+      <tr><td><code>tipo: …</code></td><td><code>portada</code>, <code>contenido</code> (lista), <code>proceso</code> (pasos), <code>comparar</code> (sí / no), <code>linea</code> (línea de tiempo), <code>grafico</code> (barras), <code>cifra</code>, <code>cita</code>, <code>mito</code> (mito o realidad), <code>correo</code>, <code>pregunta</code> o <code>cierre</code>. Los botones «Añadir escena» insertan un ejemplo listo de cada una.</td></tr>
       <tr><td><code>&gt; texto</code></td><td>Narración. En el vídeo sin voz aparece como texto en pantalla.</td></tr>
       <tr><td><code>{1} {2} …</code></td><td>Dentro de la narración: en ese momento aparece el elemento 1, 2… (y en el correo, la cámara hace zoom).</td></tr>
       <tr><td><code>- texto</code></td><td>Elemento de una lista. <code>**negrita**</code> para destacar.</td></tr>
@@ -105,6 +117,11 @@
       <tr><td><code>```correo … ```</code></td><td>Un correo de ejemplo. Primero la cabecera (<code>De:</code>, <code>Para:</code>, <code>Asunto:</code>); tras una línea en blanco, el cuerpo.</td></tr>
       <tr><td><code>[[texto|nota]]</code></td><td>Dentro del correo: resalta «texto» y muestra la nota. <code>[[btn:Texto|nota]]</code> dibuja un botón.</td></tr>
       <tr><td><code>pregunta: …</code></td><td>Opciones con <code>- [ ]</code> y la correcta con <code>- [x]</code>. Además <code>explicacion:</code> y, opcional, <code>repasar: Título de otra escena</code>.</td></tr>
+      <tr><td><code>proceso</code> / <code>linea</code></td><td>Una línea <code>- **Paso o fecha**: texto</code> por paso (hasta 5) o hito (hasta 6).</td></tr>
+      <tr><td><code>comparar</code></td><td><code>- [si] …</code> para lo que hay que hacer y <code>- [no] …</code> para lo que hay que evitar. Títulos de columna opcionales: <code>si:</code> y <code>no:</code>.</td></tr>
+      <tr><td><code>grafico</code></td><td>Una barra por línea: <code>- Etiqueta: 45</code>. Opcional <code>unidad: %</code>. Una etiqueta en <code>**negrita**</code> resalta su barra.</td></tr>
+      <tr><td><code>cita</code></td><td><code>cita:</code> la frase y <code>autor:</code> quién la dice.</td></tr>
+      <tr><td><code>mito</code></td><td><code>mito:</code> la creencia falsa y <code>realidad:</code> la verdad. La tarjeta se gira en <code>{1}</code>.</td></tr>
       <tr><td><code>[hackeó](jaqueó)</code></td><td>En pantalla se ve lo primero; la voz (versión local) dice lo segundo.</td></tr>
     </table>
     <p>La cabecera entre <code>---</code> define <code>titulo</code>, <code>subtitulo</code>, <code>empresa</code>, <code>idioma</code> (es / en), <code>color</code> y <code>nota_aprobado</code>.</p>
@@ -116,8 +133,13 @@
 <dialog class="ia" id="dlg-ia" aria-labelledby="ia-titulo">
   <form id="ia-form" novalidate>
     <h2 id="ia-titulo" data-t="ia_tit"></h2>
-    <p class="ia-intro" data-t="ia_intro"></p>
-    <label class="ia-campo"><span data-t="ia_material"></span>
+    <fieldset class="ia-origen">
+      <legend data-t="ia_origen"></legend>
+      <label><input type="radio" name="ia-origen" id="ia-origen-material" checked> <span data-t="ia_de_material"></span></label>
+      <label><input type="radio" name="ia-origen" id="ia-origen-brief"> <span data-t="ia_de_brief"></span></label>
+    </fieldset>
+    <p class="ia-intro" id="ia-intro"></p>
+    <label class="ia-campo"><span id="ia-lbl-material"></span>
       <textarea id="ia-material" rows="7" data-t-ph="ia_ph"></textarea>
     </label>
     <div class="ia-fila">
@@ -131,6 +153,14 @@
     <label class="ia-campo"><span data-t="ia_extra"></span>
       <input type="text" id="ia-extra" data-t-ph="ia_extra_ph">
     </label>
+    <fieldset class="ia-acceso">
+      <legend data-t="ia_tipos"></legend>
+      <div class="ia-radios">
+        <label class="ed-check"><input type="radio" name="ia-tipos" id="ia-tipos-auto" checked> <span data-t="ia_tipos_auto"></span></label>
+        <label class="ed-check"><input type="radio" name="ia-tipos" id="ia-tipos-elegir"> <span data-t="ia_tipos_elegir"></span></label>
+      </div>
+      <div class="ia-tipos-lista" id="ia-tipos-lista" hidden></div>
+    </fieldset>
     <fieldset class="ia-acceso">
       <legend data-t="ia_acceso"></legend>
       <div class="ia-radios">

@@ -80,7 +80,7 @@ def leer_diapositiva(bloque: str, num: int):
             d["opciones"].append({"texto": s[6:].strip(), "correcta": s[3].lower() == "x"})
         elif s.startswith("- "):
             d["vinetas"].append(s[2:].strip())
-        elif re.match(r"^(tipo|cifra|texto|pregunta|explicacion|repasar):", s):
+        elif re.match(r"^(tipo|cifra|texto|pregunta|explicacion|repasar|cita|autor|mito|realidad|unidad|si|no):", s):
             k, v = s.split(":", 1)
             d[k] = v.strip()
     return d
